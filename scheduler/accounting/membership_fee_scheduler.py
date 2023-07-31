@@ -81,33 +81,47 @@ class MembershipFeeScheduler:
 
         database = Database()
 
-        # 추후 성능 향상을 위해 수정 예정
         # 새로 추가된 데이터를 INSERT
+        sql = "INSERT INTO membership_fees (`date`, user_id, category, amount) VALUES(%s, %s, %s, %s);"
+        values = []
+
         for sheet_idx in created:
             created_data = self.sheet_data[sheet_idx]
+            print(created_data)
             for idx, category in enumerate(created_data[2:]):
                 monthly_date = self._get_date_by_month(current_date, idx + 3)
-                sql = "INSERT INTO membership_fees (`date`, user_id, category, amount) "\
-                    f"VALUES('{monthly_date}', '{created_data[0]}', {category}, {created_data[1] if category < 5 else 0});"
-                database.execute(sql)
+                value = (monthly_date, created_data[0], category, created_data[1] if category < 5 else 0)
+                values.append(value)
+
+        database.execute_many(sql, values)
 
         # 삭제된 데이터를 DELETE
+        sql = "DELETE FROM membership_fees WHERE user_id = %s;"
+        values = []
+
         for db_idx in deleted:
             deleted_data = self.db_data[db_idx]
-            sql = f"DELETE FROM membership_fees WHERE user_id = '{deleted_data[0]}';"
-            database.execute(sql)
+            value = (deleted_data[0], )
+            values.append(value)
+
+        database.execute_many(sql, values)
 
         # 수정된 데이터를 UPDATE
+        sql = "UPDATE membership_fees SET category = %s WHERE `date` = %s AND user_id = %s;"
+        values = []
+
         for sheet_idx, pos in modified:
             modified_data = self.sheet_data[sheet_idx]
             monthly_date = self._get_date_by_month(current_date, pos + 1)
-            print(monthly_date, modified_data[pos])
-            sql = f"UPDATE membership_fees SET category = {modified_data[pos]} WHERE `date` = '{monthly_date}' AND user_id = '{modified_data[0]}';"
-            database.execute(sql)
+            value = (modified_data[pos], monthly_date, modified_data[0])
+            values.append(value)
+
+        database.execute_many(sql, values)
 
         database.commit()
         database.close()
 
+        # 현재 변수에 저장된 db_data 갱신
         self._db_data = self._sheet_data
 
     # 구글 시트 데이터 갱신
