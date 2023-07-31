@@ -1,34 +1,13 @@
-import gspread # 5.10.0
+
 from database.database import Database
 from datetime import datetime, date
-import hashlib
+from scheduler.accounting.abstract_accounting_scheduler import AbstractAccountingScheduler
 
-class MembershipFeeScheduler:
+class MembershipFeeScheduler(AbstractAccountingScheduler):
     # 월별 회비 확인표 스케줄러
     def __init__(self):
-        self._client = gspread.service_account(filename= "scheduler/accounting/service_account.json")
-        self._spreadsheet = self._client.open_by_url("https://docs.google.com/spreadsheets/d/1Ck5pB9Wm-d0uHJzoSCNH8TxopH_CrjMIR-_1FMqZpwg/edit?usp=sharing")
         self._worksheet = self._spreadsheet.get_worksheet(2)
-        self._sheet_data = None
-        self._db_data = None
 
-        # 관련 로직 추후 구현 예정
-        self._last_update = None
-        self._last_synchronization = None
-
-
-    @property # 구글 시트 데이터
-    def sheet_data(self):
-        if not self._sheet_data:
-            self.update_sheet_data()
-        return self._sheet_data
-    
-    @property # DB 데이터
-    def db_data(self):
-        if not self._db_data:
-            self.update_db_data()
-        return self._db_data
-    
     # 동기화 (Sheet -> DB)
     def synchronize(self):
         # 동기화에 앞서 data 업데이트
@@ -124,14 +103,6 @@ class MembershipFeeScheduler:
         # 현재 변수에 저장된 db_data 갱신
         self._db_data = self._sheet_data
 
-    # 구글 시트 데이터 갱신
-    def update_sheet_data(self):
-        self._sheet_data = self._read_data_from_sheet()
-
-    # DB 데이터 갱신
-    def update_db_data(self, current_date = datetime.today()):
-        self._db_data = self._read_data_from_database(current_date)
-
     # 현재는 이름을 읽어오지만 추후 user_id로 변환하도록 수정 예정
     # 구글 시트에서 회비 납부 데이터를 읽어오기
     def _read_data_from_sheet(self):
@@ -181,7 +152,7 @@ class MembershipFeeScheduler:
 
         # DB에서 기간에 따른 데이터 불러오기
         sql = "SELECT user_id, GROUP_CONCAT(amount ORDER BY date) as amounts, GROUP_CONCAT(category ORDER BY date) as categories FROM membership_fees "\
-            f"WHERE date between '{start_date}' and '{end_date}'GROUP BY user_id ORDER BY user_id;"
+            f"WHERE date between '{start_date}' and '{end_date}' GROUP BY user_id ORDER BY user_id;"
 
         raw_data = database.execute_all(sql)
         database.close()
@@ -192,19 +163,3 @@ class MembershipFeeScheduler:
             db_data.append([row['user_id'], int(row['amounts'].split(',')[-1])])
             db_data[-1].extend(map(int, row['categories'].split(',')))
         return db_data
-    
-    # 데이터에서의 특정 값의 위치 반환
-    def _find_index(self, data, value):
-        for i, row in enumerate(data):
-            for j, cell in enumerate(row):
-                if cell == value:
-                    return i, j
-        return None
-        
-    # 부분 테이블 반환
-    def _get_sub_data(self, data, start_row, start_col, end_row, end_col):
-        return [row[start_col : end_col] for row in data[start_row : end_row]]
-    
-    # 달(month)을 YYYY-MM-01 형식으로 변환
-    def _get_date_by_month(self, current_date, month):
-        return date(current_date.year - int(current_date.month < 3) + int(month > 12), month if month <= 12 else month - 12, 1)
