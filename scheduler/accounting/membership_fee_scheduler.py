@@ -61,12 +61,11 @@ class MembershipFeeScheduler(AbstractAccountingScheduler):
         database = Database()
 
         # 새로 추가된 데이터를 INSERT
-        sql = "INSERT INTO membership_fees (`date`, user_id, category, amount) VALUES(%s, %s, %s, %s);"
+        sql = "INSERT INTO membership_fees VALUES(%s, %s, %s, %s);"
         values = []
 
         for sheet_idx in created:
             created_data = self.sheet_data[sheet_idx]
-            print(created_data)
             for idx, category in enumerate(created_data[2:]):
                 monthly_date = self._get_date_by_month(current_date, idx + 3)
                 value = (monthly_date, created_data[0], category, created_data[1] if category < 5 else 0)
@@ -86,7 +85,7 @@ class MembershipFeeScheduler(AbstractAccountingScheduler):
         database.execute_many(sql, values)
 
         # 수정된 데이터를 UPDATE
-        sql = "UPDATE membership_fees SET category = %s WHERE `date` = %s AND user_id = %s;"
+        sql = "UPDATE membership_fees SET category = %s WHERE date = %s AND user_id = %s;"
         values = []
 
         for sheet_idx, pos in modified:
