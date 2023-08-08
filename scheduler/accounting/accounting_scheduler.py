@@ -101,7 +101,7 @@ class AccountingScheduler(AbstractAccountingScheduler):
     # 구글 시트에서 거래 내역 데이터를 읽어오기
     def _read_data_from_sheet(self):
         raw_data = self._worksheet.get_values()
-        read_data = []
+        sheet_data = []
 
         # 지출 내역 읽어오기
         i, j = self._find_index(raw_data, '지출')
@@ -113,7 +113,7 @@ class AccountingScheduler(AbstractAccountingScheduler):
             row[1] = -int(row[1][1:].replace(',', ''))
             row[-1] = self._convert_to_index(PAYMENT_METHOD, row[-1])
 
-            read_data.append(row)
+            sheet_data.append(row)
             i += 1
 
         # 수입 내역 읽어오기
@@ -125,16 +125,16 @@ class AccountingScheduler(AbstractAccountingScheduler):
             row[0] = row[0].replace('.', '-')
             row[1] = int(row[1][1:].replace(',', ''))
             row[-1] = self._convert_to_index(PAYMENT_METHOD, row[-1])
-            read_data.append(row)
+            sheet_data.append(row)
             i += 1
 
-        read_data.sort()
+        sheet_data.sort()
 
         # 임시 코드(id값 임의 삽입)
-        for idx, row in enumerate(read_data):
+        for idx, row in enumerate(sheet_data):
             row.insert(0, idx + 1)
 
-        return read_data
+        return sheet_data
     
     # DB에서 거래 내역 데이터 읽어오기
     def _read_data_from_database(self, current_date = datetime.today()):

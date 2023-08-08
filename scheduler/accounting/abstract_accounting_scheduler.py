@@ -28,25 +28,25 @@ class AbstractAccountingScheduler(metaclass=ABCMeta):
     
     # 동기화 (Sheet -> DB)
     @abstractmethod
-    def synchronize(self):
+    def synchronize(self, *args):
         pass
 
     # 구글 시트 데이터 갱신
-    def update_sheet_data(self):
-        self._sheet_data = self._read_data_from_sheet()
+    def update_sheet_data(self, *args):
+        self._sheet_data = self._read_data_from_sheet(*args)
 
     # DB 데이터 갱신
-    def update_db_data(self, current_date = datetime.today()):
-        self._db_data = self._read_data_from_database(current_date)
+    def update_db_data(self, *args):
+        self._db_data = self._read_data_from_database(*args)
 
     # 구글 시트로부터 데이터 읽어오기
     @abstractmethod
-    def _read_data_from_sheet(self):
+    def _read_data_from_sheet(self, *args):
         pass
 
     # DB로부터 데이터 읽어오기
     @abstractmethod
-    def _read_data_from_database(self, current_date = datetime.today()):
+    def _read_data_from_database(self, *args):
        pass
     
     # 데이터에서의 특정 값의 위치 반환
