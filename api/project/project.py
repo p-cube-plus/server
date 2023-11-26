@@ -54,7 +54,7 @@ class ProjectListAPI(Resource):
 
                 try:
                     database = Database()
-                    sql = f'''SELECT u.id, u.is_signed, u.name, u.level, p.is_pm
+                    sql = f'''SELECT u.is_signed, u.name, u.level, p.is_pm
                             FROM users u
                             INNER JOIN project_members p ON u.id = p.user_id
                             WHERE p.project_id = {project['id']};'''
