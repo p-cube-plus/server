@@ -361,7 +361,7 @@ class ProjectDTO:
         'platform': fields.List(fields.String(desciption='플랫폼'), example= ['PC', 'Mobile']),
         'is_finding_member': fields.Boolean(desciption='멤버 모집 여부', example=False),
         'is_able_inquiry': fields.Boolean(description='질의 가능 여부', example=True),
-        'pm': nullable(fields.Nested(model_member, description='프로젝트 PM 정보 (nullable)')),
+        'pm': nullable(fields.Nested)(model_member, description='프로젝트 PM 정보 (nullable)'),
         'members': fields.List(fields.Nested(model_member), description="PM을 제외한 프로젝트 멤버 목록")
     })
 
