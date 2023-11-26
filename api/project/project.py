@@ -67,6 +67,7 @@ class ProjectListAPI(Resource):
                 pm_idx = None
                 for idx, member in enumerate(members):
                     member['name'] = crypt.decrypt(member['name'])
+                    member['is_pm'] = member['is_pm'] == 1
                     if member['is_pm']:
                         pm_idx = idx
                         break
