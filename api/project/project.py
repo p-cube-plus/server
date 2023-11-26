@@ -54,7 +54,7 @@ class ProjectListAPI(Resource):
 
                 try:
                     database = Database()
-                    sql = f'''SELECT u.is_signed, u.name, u.level, p.is_pm
+                    sql = f'''SELECT u.is_signed, u.name, u.level, u.part_index, u.profile_image, p.is_pm
                             FROM users u
                             INNER JOIN project_members p ON u.id = p.user_id
                             WHERE p.project_id = {project['id']};'''
@@ -65,11 +65,11 @@ class ProjectListAPI(Resource):
                     database.close()
 
                 pm_idx = None
-                for idx, member in enumerate(members):
+                for i, member in enumerate(members):
                     member['name'] = crypt.decrypt(member['name'])
-                    member['is_pm'] = member['is_pm'] == 1
-                    if member['is_pm']:
-                        pm_idx = idx
+                    is_pm = member.pop('is_pm')
+                    if is_pm:
+                        pm_idx = i
                         break
                 project_list[idx]['pm'] = members.pop(pm_idx) if not pm_idx else None
                 project_list[idx]['members'] = members
