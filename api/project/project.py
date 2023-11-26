@@ -1,11 +1,13 @@
 from flask import Flask, request
 from flask_restx import Resource, Namespace
 from database.database import Database
+from utils.aes_cipher import AESCipher
 from utils.dto import ProjectDTO
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from utils.enum_tool import convert_to_string, convert_to_index, ProjectEnum
 
 project = ProjectDTO.api
+crypt = AESCipher()
 
 @project.route("")
 class ProjectListAPI(Resource):
@@ -49,5 +51,26 @@ class ProjectListAPI(Resource):
                 # index를 Boolean 값으로 변경
                 project_list[idx]['is_finding_member'] = True if project['is_finding_member'] else False
                 project_list[idx]['is_able_inquiry'] = True if project['is_able_inquiry'] else False
+
+                try:
+                    database = Database()
+                    sql = f'''SELECT u.id, u.is_signed, u.name, u.level, p.is_pm
+                            FROM users u
+                            INNER JOIN project_members p ON u.id = p.user_id
+                            WHERE p.project_id = {project['id']};'''
+                    members = database.execute_all(sql)
+                except:
+                    return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!'}, 400
+                finally:
+                    database.close()
+
+                pm_idx = None
+                for idx, member in enumerate(members):
+                    member['name'] = crypt.decrypt(member['name'])
+                    if member['is_pm']:
+                        pm_idx = idx
+                        break
+                project_list[idx]['pm'] = members.pop(pm_idx) if not pm_idx else None
+                project_list[idx]['members'] = members
 
             return project_list, 200
