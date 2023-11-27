@@ -348,7 +348,7 @@ class ProjectDTO:
         'name': fields.String(description="멤버 이름", example="홍길동"),
         'level': fields.Integer(description="회원 분류(정회원, 수습회원 등)", example=1),
         'part_index': fields.Integer(description="파트 인덱스", example=1),
-        'profile_image': nullable(fields.String)(description="PCube+ 프로필 이미지", example="url"),
+        'profile_image': nullable(fields.String)(description="PCube+ 프로필 이미지", example="url (nullable)"),
         'is_pm': fields.Boolean(description="PM 여부", example=False),
     })
 
