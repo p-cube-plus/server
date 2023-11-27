@@ -359,3 +359,15 @@ class ProjectDTO:
     response_message = api.model('response_message', {
         'message': fields.String(description='결과 메시지', example="결과 메시지")
     })
+
+class VerificationDTO:
+    api = Namespace('verification', description='회원 휴대전화 인증')
+
+    model_verification_request = api.model('model_verification_request', {
+        'phone_number': fields.String(description='회원 휴대폰 번호', example='01011112222')
+    })
+
+    model_verification_confirm = api.model('model_verification_confirm', {
+        'phone_number': fields.String(description='회원 휴대폰 번호', example='01011112222'),
+        'verification_code': fields.String(description='인증 번호', example='123456')
+    })

@@ -1,1 +1,1 @@
-from sms.naver_sms import *
+from sms.solapi_sms import *
