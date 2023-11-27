@@ -349,7 +349,6 @@ class ProjectDTO:
         'level': fields.Integer(description="회원 분류(정회원, 수습회원 등)", example=1),
         'part_index': fields.Integer(description="파트 인덱스", example=1),
         'profile_image': nullable(fields.String)(description="PCube+ 프로필 이미지", example="url (nullable)"),
-        'is_pm': fields.Boolean(description="PM 여부", example=False),
     })
 
     model_project = api.model('model_project', {
