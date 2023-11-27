@@ -5,7 +5,7 @@ import configparser
 import base64
 import hashlib
 
-__all__ = ['send']
+__all__ = ['send_msg']
 
 config = configparser.ConfigParser()
 config.read('config/config.ini')
@@ -24,7 +24,7 @@ def _make_signature(method, uri, timestamp):
     return signature
 
 # SMS 발송
-def send(to_number, message):
+def send_msg(to_number, message):
     timestamp = str(int(time.time() * 1000))
     signature = _make_signature('POST', uri, timestamp)
 

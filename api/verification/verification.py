@@ -25,7 +25,7 @@ class VerificationRequestAPI(Resource):
         code = generate_code()
         message = f"인증번호: {code}\n 타인 유출로 인한 피해 주의"
 
-        sms.send(phone_number, message)
+        sms.send_msg(phone_number, message)
 
         return {'message': '인증 번호가 발송되었어요 :)'}, 200
 

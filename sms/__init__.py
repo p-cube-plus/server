@@ -1,1 +1,1 @@
-from sms.sms_sender import *
+from sms.naver_sms import *
