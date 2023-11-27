@@ -346,8 +346,8 @@ class ProjectDTO:
     model_member = api.model('model_member', {
         'is_signed': fields.Boolean(description="PCube+ 가입 여부", example=True),
         'name': fields.String(description="멤버 이름", example="홍길동"),
-        'level': fields.Integer(description="회원 분류(정회원, 수습회원 등)", example="정회원"),
-        'is_pm': fields.Boolean(description="PM 여부", example="False"),
+        'level': fields.Integer(description="회원 분류(정회원, 수습회원 등)", example=1),
+        'is_pm': fields.Boolean(description="PM 여부", example=False),
     })
 
     model_project = api.model('model_project', {
@@ -358,10 +358,10 @@ class ProjectDTO:
         'start_date': nullable(fields.String)(desciption='시작일', example='2023-01-01 (nullable)'),
         'end_date': nullable(fields.String)(desciption='종료일', example='2023-01-01 (nullable)'),
         'graphic': nullable(fields.String)(desciption='그래픽', example='2D (nullable)'),
-        'platform': fields.List(fields.String(desciption='플랫폼'), example= ['PC', 'Mobile']),
+        'platform': fields.List(fields.String(desciption='플랫폼'), example=['PC', 'Mobile']),
         'is_finding_member': fields.Boolean(desciption='멤버 모집 여부', example=False),
         'is_able_inquiry': fields.Boolean(description='질의 가능 여부', example=True),
-        'pm': nullable(fields.Nested)(model_member, description='프로젝트 PM 정보 (nullable)'),
+        'pm': fields.Nested(model_member, description='프로젝트 PM 정보 (nullable)'),
         'members': fields.List(fields.Nested(model_member), description="PM을 제외한 프로젝트 멤버 목록")
     })
 
