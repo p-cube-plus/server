@@ -17,17 +17,21 @@ api_key = config['sms']['sms_api_key']
 api_secret = config['sms']['sms_api_secret']
 from_number = config['sms']['sms_from_number']
 
+# 식별자 얻기
 def _unique_id():
     return str(uuid.uuid1().hex)
 
+# 시간 얻기
 def _get_iso_datetime():
     utc_offset_sec = time.altzone if time.localtime().tm_isdst else time.timezone
     utc_offset = datetime.timedelta(seconds=-utc_offset_sec)
     return datetime.datetime.now().replace(tzinfo=datetime.timezone(offset=utc_offset)).isoformat()
 
+# 시그니처 생성
 def _get_signature(key, msg):
     return hmac.new(key.encode(), msg.encode(), hashlib.sha256).hexdigest()
 
+# 헤더 얻기
 def _get_headers():
     date = _get_iso_datetime()
     salt = _unique_id()
@@ -37,6 +41,7 @@ def _get_headers():
     }
     return headers
 
+# Body 얻기
 def _get_body(to_number, message):
     body = {
         'messages': [
@@ -54,6 +59,7 @@ def _get_body(to_number, message):
     }
     return body
 
+# SMS 발송
 def send_msg(to_number, message):
     res = requests.post(url, json=_get_body(to_number, message), headers=_get_headers())
     return res

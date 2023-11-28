@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, session
 from flask_restx import Api
 from api.auth.auth import auth
 from api.auth.oauth import oauth
@@ -13,6 +13,7 @@ from api.attendance.attendance import attendance
 from api.verification.verification import verification
 from api.admin.admin import admin
 from flask_jwt_extended import JWTManager
+import memcache
 import configparser
 import datetime
 
@@ -30,9 +31,19 @@ authorizations = {
 api = Api(app, authorizations=authorizations)
 
 jwt = JWTManager(app)
+
+app.secret_key = config['APP']['SECRET_KEY']
+
 app.config['JWT_SECRET_KEY'] = config['JWT']['JWT_SECRET_KEY']
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(minutes=int(config['JWT']['JWT_ACCESS_TOKEN_EXPIRES']))
 app.config['JWT_REFRESH_TOKEN_EXPIRES'] = datetime.timedelta(days=int(config['JWT']['JWT_REFRESH_TOKEN_EXPIRES']))
+
+app.config['SESSION_TYPE'] = 'memcached'
+app.config['SESSION_PERMANENT'] = True
+app.config['SESSION_USE_SIGNER'] = True
+app.config['SESSION_MEMCACHED'] = memcache.Client(['0.0.0.0:11211'])
+
+app.permanent_session_lifetime = datetime.timedelta(minutes=10)
 
 api.add_namespace(auth, '/auth')
 api.add_namespace(oauth, '/oauth')
@@ -47,7 +58,6 @@ api.add_namespace(attendance, '/attendance')
 api.add_namespace(verification, '/verification')
 
 app.register_blueprint(admin)
-
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=5000)

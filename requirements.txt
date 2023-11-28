@@ -31,3 +31,4 @@ Werkzeug==2.3.3
 zipp==3.5.0
 pycryptodomex==3.18.0
 gspread==5.10.0
+python-memcached==1.59

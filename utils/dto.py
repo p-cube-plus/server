@@ -364,10 +364,30 @@ class VerificationDTO:
     api = Namespace('verification', description='회원 휴대전화 인증')
 
     model_verification_request = api.model('model_verification_request', {
-        'phone_number': fields.String(description='회원 휴대폰 번호', example='01011112222')
+        'phone_number': fields.String(description='회원 휴대폰 번호', example='010XXXXYYYY')
     })
 
     model_verification_confirm = api.model('model_verification_confirm', {
-        'phone_number': fields.String(description='회원 휴대폰 번호', example='01011112222'),
+        'phone_number': fields.String(description='회원 휴대폰 번호', example='010XXXXYYYY'),
         'verification_code': fields.String(description='인증 번호', example='123456')
+    })
+
+    model_verification_name = api.model('model_verification_name', {
+        'name': fields.String(desciption='회원 이름', example='홍길동')
+    })
+
+    response_verification_sms_validation = api.model('response_verification_sms_validation', {
+        'is_valid': fields.Boolean(description='SMS API 정상 호출 여부', example=True)
+    })
+
+    response_verification_result = api.model('response_verification_result', {
+        'is_verified': fields.Boolean(description='인증 성공 여부', example=True)
+    })
+
+    response_verification_name = api.model('response_verification_name', {
+        'is_member': fields.Boolean(description='가입 여부', example=True)
+    })
+
+    response_verification_message = api.model('response_verification_message', {
+        'message': fields.String(description='결과 메시지', example="결과 메시지")
     })
