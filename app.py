@@ -38,12 +38,17 @@ app.config['JWT_SECRET_KEY'] = config['JWT']['JWT_SECRET_KEY']
 app.config['JWT_ACCESS_TOKEN_EXPIRES'] = datetime.timedelta(minutes=int(config['JWT']['JWT_ACCESS_TOKEN_EXPIRES']))
 app.config['JWT_REFRESH_TOKEN_EXPIRES'] = datetime.timedelta(days=int(config['JWT']['JWT_REFRESH_TOKEN_EXPIRES']))
 
+mc = memcache.Client(['0.0.0.0:11211'])
+
 app.config['SESSION_TYPE'] = 'memcached'
 app.config['SESSION_PERMANENT'] = True
 app.config['SESSION_USE_SIGNER'] = True
-app.config['SESSION_MEMCACHED'] = memcache.Client(['0.0.0.0:11211'])
+app.config['SESSION_MEMCACHED'] = mc
 
 app.permanent_session_lifetime = datetime.timedelta(minutes=10)
+
+app.extensions['jwt_manager'] = jwt
+app.extensions['memcache_client'] = mc
 
 api.add_namespace(auth, '/auth')
 api.add_namespace(oauth, '/oauth')
