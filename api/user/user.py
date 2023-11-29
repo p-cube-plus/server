@@ -1,12 +1,13 @@
 import requests
-from flask import Flask, redirect, request
+from flask import Flask, redirect, request, current_app
 from flask_restx import Resource, Api, Namespace
 from database.database import Database
-from datetime import datetime
 from utils.dto import UserDTO
 from utils.enum_tool import convert_to_string, convert_to_index, UserEnum, WarningEnum, ProjectEnum
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from utils.aes_cipher import AESCipher
+import configparser
+import datetime
 
 user = UserDTO.api
 
@@ -120,3 +121,31 @@ class UserProjectAPI(Resource):
                 project_list[idx]['is_able_inquiry'] = True if project['is_able_inquiry'] else False
 
             return project_list, 200
+        
+@user.route('/logout')
+class UserLogoutAPI(Resource):
+    config = configparser.ConfigParser()
+    config.read_file(open('config/config.ini'))
+
+    # 토큰 만료 시간을 초 단위로 변환
+    ACCESS_EXPIRES = datetime.timedelta(minutes=int(config['JWT']['JWT_ACCESS_TOKEN_EXPIRES'])).seconds
+    REFRESH_EXPIRES = datetime.timedelta(days=int(config['JWT']['JWT_REFRESH_TOKEN_EXPIRES'])).days * 24 * 60 * 60
+
+    # 로그아웃 기능
+    @user.doc(security='apiKey')
+    @jwt_required(verify_type=False)
+    def delete(self):
+        # jwt 얻어오기
+        token = get_jwt()
+        jti = token["jti"]
+        ttype = token["type"]
+
+        # jwt의 종류에 따라 memcache(jwt_blocklist)에 저장될 시간 설정 및 저장
+        token_expires = self.ACCESS_EXPIRES if ttype == 'access' else self.REFRESH_EXPIRES
+        mc = current_app.extensions['memcache_client']
+        mc.set(jti, "", token_expires)
+
+        # 결과 메시지
+        message = f"{ttype.capitalize()} 토큰이 성공적으로 제거되었어요 :)"
+
+        return {'message': message}, 200
