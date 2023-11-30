@@ -45,7 +45,7 @@ class UserProfileAPI(Resource):
             user['rest_type'] = convert_to_string(UserEnum.REST_TYPE, user['rest_type'])
             
             return user, 200
-    
+
 @user.route('/warning')
 class UserWarningAPI(Resource):
     @user.response(200, 'OK', UserDTO.model_user_warning)
@@ -77,7 +77,7 @@ class UserWarningAPI(Resource):
 
         # 정수로 보정되어 있던 값을 실제 횟수로 변환하여 반환
         return {'total_warning': total_warning / 2.0}, 200
-    
+
 @user.route('/project')
 class UserProjectAPI(Resource):
     @user.response(200, 'OK', [UserDTO.model_user_project])
@@ -121,10 +121,11 @@ class UserProjectAPI(Resource):
                 project_list[idx]['is_able_inquiry'] = True if project['is_able_inquiry'] else False
 
             return project_list, 200
-        
+
 @user.route('/logout')
 class UserLogoutAPI(Resource):
     # 로그아웃 기능
+    @user.response(200, 'OK', UserDTO.response_logout_message)
     @user.doc(security='apiKey')
     @jwt_required(verify_type=False)
     def delete(self):
