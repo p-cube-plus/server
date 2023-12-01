@@ -28,9 +28,10 @@ class WarningUserAPI(Resource):
             database.close()
 
         if not warning_list: # 경고를 받은 적이 없을 때 처리
-            return {'warning_list': [], 'total_warning': 0}, 200
+            return {'warning_category': {}, 'warning_add_list': [], 'warning_remove_list': [], 'total_warning': 0}, 200
         else:
             total_warning = 0
+            add_list, remove_list = [], []
             for idx, warning in enumerate(warning_list):
                 # date를 문자열로 변환
                 warning_list[idx]['date'] = warning['date'].strftime('%Y-%m-%d')
@@ -42,7 +43,15 @@ class WarningUserAPI(Resource):
                     total_warning += warning['category']
                     total_warning = max(total_warning, 0)
 
-                # category를 문자열로 변환
-                warning_list[idx]['category'] = convert_to_string(WarningEnum.CATEGORY, warning['category'])
+                # 경고 부여, 차감에 따라 원소 분리
+                if warning_list[idx]['category'] >= convert_to_index(WarningEnum.CATEGORY, '주의 부여'):
+                    add_list.append(warning)
+                else:
+                    remove_list.append(warning)
 
-            return {'warning_list': warning_list, 'total_warning': total_warning / 2.0}, 200
+            return {
+                'warning_category': WarningEnum.CATEGORY,
+                'warning_add_list': add_list,
+                'warning_remove_list': remove_list,
+                'total_warning': total_warning / 2.0
+            }, 200
