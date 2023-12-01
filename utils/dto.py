@@ -159,7 +159,7 @@ class WarningDTO:
     api = Namespace('warning', description='회원 경고 기능')
 
     model_warning = api.model('model_warning', {
-        'category': fields.String(description='회의 종류', enum=['경고 차감', '주의 차감', '주의 부여', '경고 부여', '경고 초기화']),
+        'category': fields.Integer(description='회의 종류', enum=[-2, -1, 0, 1, 2]),
         'date': fields.String(description='날짜', example='2023-09-26'),
         'description': fields.String(description='사유', example='지각'),
         'comment': nullable(fields.String)(description='비고', example='연락없이 무단 지각 함.')
