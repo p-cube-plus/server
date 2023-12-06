@@ -29,6 +29,7 @@ class WarningUserAPI(Resource):
 
         if not warning_list: # 경고를 받은 적이 없을 때 처리
             return {
+                'warning_category': {}, 
                 'warning_add_list': [],
                 'warning_remove_list': [],
                 'total_warning': 0,
@@ -60,6 +61,7 @@ class WarningUserAPI(Resource):
                         else total_add_warning - total_remove_warning
 
             return {
+                'warning_category': WarningEnum.CATEGORY,
                 'warning_add_list': add_list,
                 'warning_remove_list': remove_list,
                 'total_warning': total_warning / 2.0,
