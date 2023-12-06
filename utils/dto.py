@@ -169,14 +169,6 @@ class WarningDTO:
         'id': fields.Integer(description='경고 ID')
     })
 
-    model_warning_category = api.model('model_warning_category', {
-        -2: fields.String(example='경고 차감'),
-        -1: fields.String(example='주의 차감'),
-        1: fields.String(example='주의 부여'),
-        2: fields.String(example='경고 부여'),
-        0: fields.String(example='경고 초기화'),
-    })
-
     model_warning_list = api.model('model_warning_list', {
         'warning_add_list': fields.List(fields.Nested(model_warning_with_id), description='경고 목록'),
         'warning_remove_list': fields.List(fields.Nested(model_warning_with_id), description='경고 차감 목록'),
