@@ -178,13 +178,14 @@ class WarningDTO:
     })
 
     model_warning_list = api.model('model_warning_list', {
-        'warning_category': fields.Nested((model_warning_category), description='경고 카테고리 인덱스 설명'),
         'warning_add_list': fields.List(fields.Nested(model_warning_with_id), description='경고 목록'),
         'warning_remove_list': fields.List(fields.Nested(model_warning_with_id), description='경고 차감 목록'),
     })
 
     model_warning_list_with_total = api.inherit('model_warning_list_with_total', model_warning_list, {
-        'warning_total': fields.Float(description='누적 경고 횟수', example='2.5'),
+        'total_warning': fields.Float(description='누적 경고 횟수', example='2.5'),
+        'total_add_warning': fields.Float(description='누적 경고 부여 횟수', example='2.5'),
+        'total_remove_warning': fields.Float(description='누적 경고 차감 횟수', example='2.5'),
     })
 
     query_user_id = api.parser().add_argument(
