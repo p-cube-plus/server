@@ -1,8 +1,9 @@
 from flask import Flask, request
 from flask_restx import Resource, Namespace
-from database.database import Database
-from datetime import datetime, date
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from database.database import Database
+
+from datetime import datetime, timedelta
 
 home = Namespace('home')
 
@@ -51,17 +52,22 @@ class HomeScheduleAPI(Resource):
         database.close()
 
         if not schedule_list: # 예정된 일정이 없는 경우
-            return [], 200
+            return {'all_list': schedule_list, 'upcoming_list': upcoming_list}, 200
         else:
+            upcoming_list = []
+            today = datetime.today().date()
+            limit_day = today + timedelta(days=7)
             for idx, schedule in enumerate(schedule_list):
                 # date 및 category를 문자열로 변환
+                if schedule['start_date'] >= today and schedule['start_date'] <= limit_day:
+                    upcoming_list.append(schedule)
                 schedule_list[idx]['start_date'] = schedule['start_date'].strftime('%Y-%m-%d')
                 if schedule['end_date']:
                     schedule_list[idx]['end_date'] = schedule['end_date'].strftime('%Y-%m-%d')
                 if schedule['start_time']:
                     schedule_list[idx]['start_time'] = (datetime.min + schedule['start_time']).strftime('%H:%M')
 
-        return schedule_list, 200
+        return {'all_list': schedule_list, 'upcoming_list': upcoming_list}, 200
 
 @home.route('/product')
 @home.response(200, 'Success')
