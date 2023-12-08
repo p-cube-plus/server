@@ -2,10 +2,11 @@ from flask import Flask, request
 from flask_restx import Resource, Namespace
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from database.database import Database
+from utils.dto import HomeDTO
 
 from datetime import datetime, timedelta
 
-home = Namespace('home')
+home = HomeDTO.api
 
 @home.route('/attendance')
 @home.response(200, 'Success')
@@ -36,7 +37,7 @@ class HomeAttendanceAPI(Resource):
             return meeting_list, 200
 
 @home.route('/schedule')
-@home.response(200, 'Success')
+@home.response(200, 'Success', HomeDTO.model_schedule_info)
 @home.response(401, 'Unauthorized')
 class HomeScheduleAPI(Resource):
     # 예정된 일정 목록 얻기
