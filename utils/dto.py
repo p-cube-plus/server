@@ -285,6 +285,32 @@ class AdminAccountingDTO:
         'date', type=str, help='날짜'
     )
 
+class HomeDTO:
+    api = Namespace('home', description='홈 화면 관련 기능(스케줄, 출석, 물품)')
+
+    model_all_schedule_item_info = api.model('model_all_schedule_item_info', {
+        'id': fields.Integer(description='계좌 내역 ID', example=1),
+        'type': fields.Integer(description='일정 종류', example=1),
+        'title': fields.String(description='일정 이름', example='정기회의'),
+        'start_date': fields.Date(description='일정 시작 일', example='2023-01-01'),
+        'start_time': fields.String(description='일정 시작 시간', example='09:00:00'),
+        'end_date': fields.Date(description='일정 마지막 일', example='2023-01-02'),
+    })
+
+    model_upcoming_schedule_info = api.model('model_upcoming_schedule_info', {
+        'id': fields.Integer(description='계좌 내역 ID', example=1),
+        'type': fields.Integer(description='일정 종류', example=1),
+        'title': fields.String(description='일정 이름', example='정기회의'),
+        'start_date': fields.Date(description='일정 시작 일', example='2023-01-01'),
+        'start_time': fields.String(description='일정 시작 시간', example='09:00:00'),
+        'end_date': fields.Date(description='일정 마지막 일', example='2023-01-02'),
+    })
+
+    model_schedule_info = api.model('model_schedule_info', {
+        'all_list': fields.List(fields.Nested(model_all_schedule_item_info)),
+        'upcoming_list': fields.List(fields.Nested(model_upcoming_schedule_info)),
+    })
+
 class SeminarDTO:
     api = Namespace('seminar', description='세미나 내역')
 
