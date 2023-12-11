@@ -67,6 +67,7 @@ class ProjectListAPI(Resource):
                 pm_idx = None
                 for i, member in enumerate(members):
                     member['name'] = crypt.decrypt(member['name'])
+                    member['is_signed'] = True if member['is_signed'] else False
                     is_pm = member.pop('is_pm')
                     if is_pm:
                         pm_idx = i
@@ -132,6 +133,7 @@ class ProjectAllListAPI(Resource):
                 pm_idx = None
                 for i, member in enumerate(members):
                     member['name'] = crypt.decrypt(member['name'])
+                    member['is_signed'] = True if member['is_signed'] else False
                     is_pm = member.pop('is_pm')
                     if is_pm:
                         pm_idx = i
