@@ -368,7 +368,6 @@ class VerificationDTO:
     })
 
     model_verification_confirm = api.model('model_verification_confirm', {
-        'phone_number': fields.String(description='회원 휴대폰 번호', example='010XXXXYYYY'),
         'verification_code': fields.String(description='인증 번호', example='123456')
     })
 
