@@ -368,11 +368,12 @@ class VerificationDTO:
     })
 
     model_verification_confirm = api.model('model_verification_confirm', {
-        'verification_code': fields.String(description='인증 번호', example='123456')
+        'code': fields.String(description='인증 번호', example='123456')
     })
 
-    model_verification_name = api.model('model_verification_name', {
-        'name': fields.String(desciption='회원 이름', example='홍길동')
+    model_verification_user = api.model('model_verification_user', {
+        'name': fields.String(desciption='회원 이름', example='홍길동'),
+        'phone_number': fields.String(description='회원 휴대폰 번호', example='010XXXXYYYY')
     })
 
     response_verification_sms_validation = api.model('response_verification_sms_validation', {
