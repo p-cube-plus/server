@@ -10,7 +10,6 @@ from api.warning.warning import warning
 from api.accounting.accounting import accounting
 from api.home.home import home
 from api.attendance.attendance import attendance
-from api.verification.verification import verification
 from api.admin.admin import admin
 from flask_jwt_extended import JWTManager
 import memcache
@@ -60,7 +59,6 @@ api.add_namespace(warning, '/warning')
 api.add_namespace(accounting, '/accounting')
 api.add_namespace(home, '/home')
 api.add_namespace(attendance, '/attendance')
-api.add_namespace(verification, '/verification')
 
 app.register_blueprint(admin)
 

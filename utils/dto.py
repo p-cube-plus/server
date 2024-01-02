@@ -360,34 +360,34 @@ class ProjectDTO:
         'message': fields.String(description='결과 메시지', example="결과 메시지")
     })
 
-class VerificationDTO:
-    api = Namespace('verification', description='회원 휴대전화 인증')
+class OAuthDTO:
+    api = Namespace('oauth', description='OAuth 인증')
 
-    model_verification_request = api.model('model_verification_request', {
+    model_oauth_code_request = api.model('model_oauth_code_request', {
         'phone_number': fields.String(description='회원 휴대폰 번호', example='010XXXXYYYY')
     })
 
-    model_verification_confirm = api.model('model_verification_confirm', {
+    model_oauth_code_confirm = api.model('model_oauth_code_confirm', {
         'code': fields.String(description='인증 번호', example='123456')
     })
 
-    model_verification_user = api.model('model_verification_user', {
+    model_oauth_user = api.model('model_oauth_user', {
         'name': fields.String(desciption='회원 이름', example='홍길동'),
         'phone_number': fields.String(description='회원 휴대폰 번호', example='010XXXXYYYY')
     })
 
-    response_verification_sms_validation = api.model('response_verification_sms_validation', {
+    response_oauth_sms_validation = api.model('response_oauth_sms_validation', {
         'is_valid': fields.Boolean(description='SMS API 정상 호출 여부', example=True)
     })
 
-    response_verification_result = api.model('response_verification_result', {
+    response_oauth_code_result = api.model('response_oauth_result', {
         'is_verified': fields.Boolean(description='인증 성공 여부', example=True)
     })
 
-    response_verification_name = api.model('response_verification_name', {
+    response_oauth_user = api.model('response_oauth_user', {
         'is_member': fields.Boolean(description='가입 여부', example=True)
     })
 
-    response_verification_message = api.model('response_verification_message', {
+    response_oauth_message = api.model('response_oauth_message', {
         'message': fields.String(description='결과 메시지', example="결과 메시지")
     })
