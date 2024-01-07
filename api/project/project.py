@@ -120,10 +120,10 @@ class ProjectAllListAPI(Resource):
 
                 try:
                     database = Database()
-                    sql = f'''SELECT u.is_signed, u.name, u.level, u.part_index, u.profile_image, p.is_pm
-                            FROM users u
-                            INNER JOIN project_members p ON u.id = p.user_id
-                            WHERE p.project_id = {project['id']};'''
+                    sql = f'''SELECT u.is_signed, u.name, u.level, u.part_index, u.profile_image, pm.is_pm
+                            FROM project_members AS pm
+                            JOIN users AS u ON pm.user_id = u.id
+                            WHERE pm.project_id = {project['id']};'''
                     members = database.execute_all(sql)
                 except:
                     return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!'}, 400
