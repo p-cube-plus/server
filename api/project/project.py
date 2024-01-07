@@ -71,8 +71,7 @@ class ProjectListAPI(Resource):
                     is_pm = member.pop('is_pm')
                     if is_pm:
                         pm_idx = i
-                        break
-                project_list[idx]['pm'] = members.pop(pm_idx) if not pm_idx else None
+                project_list[idx]['pm'] = members.pop(pm_idx) if pm_idx != None else None
                 project_list[idx]['members'] = members
 
             return project_list, 200
@@ -83,13 +82,13 @@ class ProjectAllListAPI(Resource):
     @project.response(200, 'OK', [ProjectDTO.model_project])
     @project.response(400, 'Bad Request', ProjectDTO.response_message)
     @project.doc(security='apiKey')
-    @jwt_required()
+    #@jwt_required()
     def get(self):
         # DB 예외 처리
         try:
             # 전체 프로젝트 목록 불러오기
             database = Database()
-            sql = f"SELECT * FROM projects ORDER BY p.start_date DESC;"
+            sql = f"SELECT * FROM projects ORDER BY start_date DESC;"
             project_list = database.execute_all(sql)
         except:
             return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!'}, 400
@@ -136,8 +135,7 @@ class ProjectAllListAPI(Resource):
                     is_pm = member.pop('is_pm')
                     if is_pm:
                         pm_idx = i
-                        break
-                project_list[idx]['pm'] = members.pop(pm_idx) if not pm_idx else None
+                project_list[idx]['pm'] = members.pop(pm_idx) if pm_idx != None else None
                 project_list[idx]['members'] = members
 
             return project_list, 200
