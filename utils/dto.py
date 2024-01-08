@@ -55,12 +55,22 @@ class AdminNotificationDTO:
     model_notification = api.model('model_notification', {
         'id': fields.Integer(description='알림 ID (POST 시에는 유효하지 않습니다.)'),
         'member_category': fields.String(description="알림 대상자 종류", enum=['활동 중인 회원 전체', '활동 중인 정회원', '활동 중인 수습회원', '기타 선택']),
-        'time': fields.String(description='알림 시간'),
-        'start_date': fields.String(description='시작일'),
-        'end_date': fields.String(description='종료일'),
-        'day': nullable(fields.String)(description="요일", example='월요일'),
-        'cycle': fields.String(description='알림 주기'),
-        'message': nullable(fields.String)(description='알림 메시지'),
+        'date': nullable(fields.String)(description='날짜'),
+        'day': nullable(fields.String)(description='요일'),
+        'time': fields.String(description='시간'),
+        'location': nullable(fields.String)(description='장소'),
+        'schedule': nullable(fields.String)(description='일정'),
+        'memo': nullable(fields.String)(description='메모'),
+        'member_list': fields.List(fields.String, description="알림 대상자 목록('알림 대상자 종류가 '기타 선택'이 아닌 경우 빈 리스트)")
+    })
+
+    model_notification_without_id = api.model('model_notification_without_id', {
+        'member_category': fields.String(description="알림 대상자 종류", enum=['활동 중인 회원 전체', '활동 중인 정회원', '활동 중인 수습회원', '기타 선택']),
+        'date': nullable(fields.String)(description='날짜'),
+        'day': nullable(fields.String)(description='요일'),
+        'time': fields.String(description='시간'),
+        'location': nullable(fields.String)(description='장소'),
+        'schedule': nullable(fields.String)(description='일정'),
         'memo': nullable(fields.String)(description='메모'),
         'member_list': fields.List(fields.String, description="알림 대상자 목록('알림 대상자 종류가 '기타 선택'이 아닌 경우 빈 리스트)")
     })

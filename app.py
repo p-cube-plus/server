@@ -12,6 +12,7 @@ from api.home.home import home
 from api.attendance.attendance import attendance
 from api.admin.admin import admin
 from flask_jwt_extended import JWTManager
+from utils import fcm
 import memcache
 import configparser
 import datetime
@@ -67,6 +68,8 @@ api.add_namespace(home, '/home')
 api.add_namespace(attendance, '/attendance')
 
 app.register_blueprint(admin)
+
+fcm.load_messages()
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=5000)
