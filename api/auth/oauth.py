@@ -133,7 +133,7 @@ class OauthCodeRequestAPI(Resource):
 
         # SMS 발송
         message = f"[PCube+]\n인증번호는 {code}입니다."
-        result = sms.send_msg(phone_number, message)
+        result = sms.send_msg(phone_number.replace("-", ""), message)
 
         # SMS API 호출 성공 여부에 따른 결과 반환        
         if result.status_code == 200:
@@ -170,10 +170,6 @@ class OauthUserCheckAPI(Resource):
     def post(self):
         # Body 데이터 읽어오기
         user_info = request.get_json()
-
-        # 휴대폰 번호 ###-####-#### 형태로 변경
-        user_info['phone_number'] = re.sub(r'\D', '', user_info['phone_number'])
-        user_info['phone_number'] = re.sub(r'(\d{3})(\d{4})(\d{4})', r'\1-\2-\3', user_info['phone_number'])
 
         # 이름 + 전화번호로 id 얻기
         id = hashlib.sha256(str(user_info['name'] + user_info['phone_number']).encode('utf-8')).hexdigest()

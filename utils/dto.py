@@ -364,7 +364,7 @@ class OAuthDTO:
     api = Namespace('oauth', description='OAuth 인증')
 
     model_oauth_code_request = api.model('model_oauth_code_request', {
-        'phone_number': fields.String(description='회원 휴대폰 번호', example='010XXXXYYYY')
+        'phone_number': fields.String(description='회원 휴대폰 번호', example='010-XXXX-YYYY')
     })
 
     model_oauth_code_confirm = api.model('model_oauth_code_confirm', {
@@ -373,7 +373,7 @@ class OAuthDTO:
 
     model_oauth_user = api.model('model_oauth_user', {
         'name': fields.String(desciption='회원 이름', example='홍길동'),
-        'phone_number': fields.String(description='회원 휴대폰 번호', example='010XXXXYYYY')
+        'phone_number': fields.String(description='회원 휴대폰 번호', example='010-XXXX-YYYY')
     })
 
     response_oauth_sms_validation = api.model('response_oauth_sms_validation', {
