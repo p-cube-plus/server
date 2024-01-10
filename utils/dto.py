@@ -431,7 +431,8 @@ class OAuthDTO:
 
     model_oauth_user = api.model('model_oauth_user', {
         'name': fields.String(desciption='회원 이름', example='홍길동'),
-        'phone_number': fields.String(description='회원 휴대폰 번호', example='010-XXXX-YYYY')
+        'phone_number': fields.String(description='회원 휴대폰 번호', example='010-XXXX-YYYY'),
+        'fcm_token': fields.String(description='회원 FCM 토큰')
     })
 
     response_oauth_sms_validation = api.model('response_oauth_sms_validation', {
