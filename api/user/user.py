@@ -18,8 +18,6 @@ class UserProfileAPI(Resource):
     def get(self):
         user_id = get_jwt_identity()
 
-        print(int(get_jwt()['exp'] - time.time()))
-
         # DB 예외 처리
         try:
             # DB에서 회원 정보 조회
