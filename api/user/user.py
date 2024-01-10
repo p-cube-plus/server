@@ -1,12 +1,11 @@
-import requests
-from flask import Flask, redirect, request
+from flask import Flask, redirect, request, current_app
 from flask_restx import Resource, Api, Namespace
 from database.database import Database
-from datetime import datetime
 from utils.dto import UserDTO
 from utils.enum_tool import convert_to_string, convert_to_index, UserEnum, WarningEnum, ProjectEnum
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from utils.aes_cipher import AESCipher
+import time
 
 user = UserDTO.api
 
@@ -18,6 +17,8 @@ class UserProfileAPI(Resource):
     @jwt_required()
     def get(self):
         user_id = get_jwt_identity()
+
+        print(int(get_jwt()['exp'] - time.time()))
 
         # DB 예외 처리
         try:
@@ -44,7 +45,7 @@ class UserProfileAPI(Resource):
             user['rest_type'] = convert_to_string(UserEnum.REST_TYPE, user['rest_type'])
             
             return user, 200
-    
+
 @user.route('/warning')
 class UserWarningAPI(Resource):
     @user.response(200, 'OK', UserDTO.model_user_warning)
@@ -76,7 +77,7 @@ class UserWarningAPI(Resource):
 
         # 정수로 보정되어 있던 값을 실제 횟수로 변환하여 반환
         return {'total_warning': total_warning / 2.0}, 200
-    
+
 @user.route('/project')
 class UserProjectAPI(Resource):
     @user.response(200, 'OK', [UserDTO.model_user_project])
@@ -120,3 +121,27 @@ class UserProjectAPI(Resource):
                 project_list[idx]['is_able_inquiry'] = True if project['is_able_inquiry'] else False
 
             return project_list, 200
+
+@user.route('/logout')
+class UserLogoutAPI(Resource):
+    # 로그아웃 기능
+    @user.response(200, 'OK', UserDTO.response_logout_message)
+    @user.doc(security='apiKey')
+    @jwt_required(verify_type=False)
+    def delete(self):
+        # jwt 얻어오기
+        token = get_jwt()
+        jti = token["jti"]
+        ttype = token["type"]
+
+        # memcache(jwt_blocklist)에 보관될 시간 계산
+        token_expires = int(token['exp'] - time.time())
+
+        # memcache(jwt_blocklist)에 보관 (= 토큰 파괴)
+        mc = current_app.extensions['memcache_client']
+        mc.set(jti, "", token_expires + 10) # 오차 고려하여 10초 추가 보관
+
+        # 결과 메시지
+        message = f"{ttype.capitalize()} 토큰이 성공적으로 제거되었어요 :)"
+
+        return {'message': message}, 200

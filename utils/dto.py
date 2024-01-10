@@ -378,6 +378,10 @@ class UserDTO:
         'message': fields.String(description='결과 메시지', example="결과 메시지")
     })
 
+    response_logout_message = api.model('reponse_logout_message', {
+        'message': fields.String(desciption='로그아웃 결과 메시지', example="Access 토큰이 성공적으로 제거되었어요 :)")
+    })
+
 class ProjectDTO:
     api = Namespace('project', description='프로젝트 참여 내역')
 

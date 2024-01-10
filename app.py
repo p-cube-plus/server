@@ -46,6 +46,12 @@ app.config['SESSION_MEMCACHED'] = mc
 
 app.permanent_session_lifetime = datetime.timedelta(minutes=int(config['session']['session_lifetime']))
 
+@jwt.token_in_blocklist_loader
+def check_if_token_is_revoked(jwt_header, jwt_payload):
+    jti = jwt_payload["jti"]
+    token = mc.get(jti)
+    return token is not None
+
 app.extensions['jwt_manager'] = jwt
 app.extensions['memcache_client'] = mc
 
