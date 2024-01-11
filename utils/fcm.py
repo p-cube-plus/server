@@ -62,3 +62,7 @@ def remove_message(id):
 def subscribe(tokens, topic):
     response = messaging.subscribe_to_topic(tokens, topic)
     return response
+
+def unsubscribe(tokens, topic):
+    response = messaging.unsubscribe_from_topic(tokens, topic)
+    return response
