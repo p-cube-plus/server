@@ -378,10 +378,6 @@ class UserDTO:
         'message': fields.String(description='결과 메시지', example="결과 메시지")
     })
 
-    response_logout_message = api.model('reponse_logout_message', {
-        'message': fields.String(desciption='로그아웃 결과 메시지', example="Access 토큰이 성공적으로 제거되었어요 :)")
-    })
-
 class ProjectDTO:
     api = Namespace('project', description='프로젝트 참여 내역')
 
@@ -442,4 +438,15 @@ class OAuthDTO:
 
     response_oauth_message = api.model('response_oauth_message', {
         'message': fields.String(description='결과 메시지', example="결과 메시지")
+    })
+
+class AuthDTO:
+    api = Namespace('auth', description='Auth 인증')
+
+    query_auth_user_id = api.parser().add_argument(
+        'user_id', type=str, help='유저 ID'
+    )
+
+    response_logout_message = api.model('reponse_logout_message', {
+        'message': fields.String(desciption='로그아웃 결과 메시지', example="Access 토큰이 성공적으로 제거되었어요 :)")
     })
