@@ -11,7 +11,7 @@ seminar = SeminarDTO.api
 class SeminarUserAPI(Resource):
     # 회원의 세미나 목록 얻기
     @seminar.expect(SeminarDTO.query_user_id, validate=True)
-    @seminar.response(200, 'OK', SeminarDTO.model_seminar_list)
+    @seminar.response(200, 'OK', [SeminarDTO.model_seminar_with_id])
     @seminar.doc(security='apiKey')
     @jwt_required()
     def get(self):
@@ -29,13 +29,13 @@ class SeminarUserAPI(Resource):
             database.close()
 
         if not seminar_list: # 세미나를 한 적이 없을 때 처리
-            return {'seminar_list': []}, 200
+            return [], 200
         else:
             for idx, seminar in enumerate(seminar_list):
                 # date 및 category를 문자열로 변경
                 seminar_list[idx]['date'] = seminar['date'].strftime('%Y-%m-%d')
                 seminar_list[idx]['category'] = convert_to_string(SeminarEnum.CATEGORY, seminar['category'])
-            return {'seminar_list': seminar_list}, 200
+            return seminar_list, 200
         
     # 세미나 정보 추가
     @seminar.expect(SeminarDTO.query_user_id, SeminarDTO.model_seminar, validate=True)
