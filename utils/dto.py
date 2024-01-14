@@ -433,7 +433,9 @@ class OAuthDTO:
     })
 
     response_oauth_user = api.model('response_oauth_user', {
-        'is_member': fields.Boolean(description='가입 여부', example=True)
+        'is_member': fields.Boolean(description='가입 여부', example=True),
+        'access_token': nullable(fields.String)(desription='엑세스 토큰', example='string (nullable)'),
+        'refresh_token': nullable(fields.String)(desription='리프레시 토큰', example='string (nullable)'),
     })
 
     response_oauth_message = api.model('response_oauth_message', {
