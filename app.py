@@ -1,4 +1,4 @@
-from flask import Flask, session
+from flask import Flask, session, request
 from flask_restx import Api
 from api.auth.auth import auth
 from api.auth.oauth import oauth
@@ -12,6 +12,7 @@ from api.home.home import home
 from api.attendance.attendance import attendance
 from api.admin.admin import admin
 from flask_jwt_extended import JWTManager
+from database.database import Database
 import memcache
 import configparser
 import datetime
@@ -55,6 +56,28 @@ def check_if_token_is_revoked(jwt_header, jwt_payload):
 app.extensions['jwt_manager'] = jwt
 app.extensions['memcache_client'] = mc
 
+# request 마다 실행
+@app.before_request
+def before_request():
+    # 유저 App 버전 얻기
+    app_version = request.headers.get('app_version')
+
+    # 이 부분은 추후 삭제 예정
+    if not app_version:
+        return
+    
+    # 서버 버전과 가용 여부 불러오기
+    server_version = config['server']['version']
+    available = bool(config['server']['available'])
+
+    # 앱을 업데이트 해야 하는 경우
+    if app_version != server_version:
+        return {'message': "앱을 업데이트 해주세요. :)"}, 503
+    
+    # 서버를 이용할 수 없는 경우
+    if not available:
+        return {'message': "서버 점검 중이에요. :("}, 503
+    
 api.add_namespace(auth, '/auth')
 api.add_namespace(oauth, '/oauth')
 api.add_namespace(user, '/user')
