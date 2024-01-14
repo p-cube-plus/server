@@ -1,20 +1,28 @@
 import pymysql
 import configparser
+from pymysqlpool.pool import Pool
 
 config = configparser.ConfigParser()
 config.read_file(open('config/config.ini'))
 
 class Database:
+    _pool = None
+
     def __init__(self):
-        self.db = pymysql.connect(
-            host = config['database']['host'],
-            user = config['database']['user'],
-            password = config['database']['password'],
-            db = config['database']['db'],
-            port = int(config['database']['port']),
-            charset = config['database']['charset']
-        )
-        self.cursor = self.db.cursor(pymysql.cursors.DictCursor)
+        if Database._pool is None:
+            Database._pool = Pool(
+                host = config['database']['host'],
+                user = config['database']['user'],
+                password = config['database']['password'],
+                db = config['database']['db'],
+                port = int(config['database']['port']),
+                charset = config['database']['charset'],
+                cursorclass=pymysql.cursors.DictCursor,
+            )
+            Database._pool.init()
+
+        self.conn = Database._pool.get_conn()
+        self.cursor = self.conn.cursor()
 
     def execute(self, query, args={}):
         self.cursor.execute(query, args)
@@ -33,7 +41,7 @@ class Database:
         return row
 
     def commit(self):
-        self.db.commit()
+        self.conn.commit()
 
     def close(self):
-        self.cursor.close()
+        Database._pool.release(self.conn)
