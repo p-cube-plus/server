@@ -65,13 +65,13 @@ class AdminNotificationDTO:
         'member_list': fields.List(fields.String, description="알림 대상자 목록('알림 대상자 종류가 '기타 선택'이 아닌 경우 빈 리스트)")
     })
 
-    model_user = api.model('model_user', {
+    model_admin_notification_user = api.model('model_admin_notification_user', {
         'id': fields.String(description='회원 ID'),
         'name': fields.String(description='이름'),
         'grade': fields.Integer(description='학년')
     })
 
-    model_payment_period = api.model('model_payment_period', {
+    model_admin_notification_payment_period = api.model('model_admin_notification_payment_period', {
         'date': fields.String(description='년/월 (YYYY-MM-01)'),
         'start_date': fields.String(description='납부 시작일'),
         'end_date': fields.String(description='납부 마감일')
@@ -86,11 +86,11 @@ class AdminNotificationDTO:
     })
 
     response_user_list = api.model('response_user_list', {
-        'user_list': fields.List(fields.Nested(model_user), description='회원 목록')
+        'user_list': fields.List(fields.Nested(model_admin_notification_user), description='회원 목록')
     })
 
     response_payment_period_list = api.model('response_payment_period_list', {
-        'payment_period_list': fields.List(fields.Nested(model_payment_period), description='회비 납부 기간 목록')
+        'payment_period_list': fields.List(fields.Nested(model_admin_notification_payment_period), description='회비 납부 기간 목록')
     })
 
     query_notification_id = api.parser().add_argument(
@@ -109,7 +109,7 @@ class AdminAttendanceDTO:
         'second_auth_end_time': nullable(fields.String)(description='2차 인증 종료 시간', example='16:55:00'),
     })
 
-    model_user = api.model('model_user', {
+    model_admin_attendance_user = api.model('model_admin_attendance_user', {
         'id': fields.String(description='ID'),
         'name': fields.String(description='이름', example='홍길동'),
         'grade': fields.Integer(description='학년', example=4),
@@ -136,7 +136,7 @@ class AdminAttendanceDTO:
     })
 
     response_user_list = api.model('model_user_list', {
-        'user_list': fields.List(fields.Nested(model_user), description='회원 목록')
+        'user_list': fields.List(fields.Nested(model_admin_attendance_user), description='회원 목록')
     })
 
     response_message = api.model('response_message', {

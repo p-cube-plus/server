@@ -74,7 +74,7 @@ class AttendanceInfoAPI(Resource):
 class AttendanceUserListAPI(Resource):
     # 회원 목록 얻기
     @attendance.expect(AdminAttendanceDTO.query_attendance_id, validate=True)
-    @attendance.response(200, 'OK', AdminAttendanceDTO.response_user_list)
+    @attendance.response(200, 'OK', [AdminAttendanceDTO.model_admin_attendance_user])
     @attendance.response(400, 'Bad Request', AdminAttendanceDTO.response_message)
     @attendance.doc(security='apiKey')
     @jwt_required()
@@ -100,7 +100,7 @@ class AttendanceUserListAPI(Resource):
             database.close()
 
         if not user_list: # 회원이 존재하지 않을 경우 처리
-            return {'user_list': []}, 200
+            return [], 200
         else:
             # index 및 time을 문자열로 변환
             for idx, user in enumerate(user_list):
@@ -110,7 +110,7 @@ class AttendanceUserListAPI(Resource):
                 user_list[idx]['state'] = convert_to_string(AttendanceEnum.CATEGORY, user['state'])
                 user_list[idx]['first_auth_time'] = str(user['first_auth_time'])
                 user_list[idx]['second_auth_time'] = str(user['second_auth_time'])
-            return {'user_list': user_list}, 200
+            return user_list, 200
     
 @attendance.route('/user/<int:attendance_id>')
 class AttendanceUserAPI(Resource):
