@@ -62,9 +62,9 @@ def before_request():
     # 유저 App 버전 얻기
     app_version = request.headers.get('app_version')
 
-    # 이 부분은 추후 삭제 예정
-    if not app_version:
-        return
+    # 헤더에 앱 버전 정보가 존재하지 않을 시
+    if app_version is None:
+        return {'message': "앱 버전 정보가 누락되었어요 :("}, 400
     
     # 서버 버전과 가용 여부 불러오기
     server_version = config['server']['version']
