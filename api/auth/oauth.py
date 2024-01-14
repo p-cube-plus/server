@@ -185,8 +185,8 @@ class OauthUserCheckAPI(Resource):
         finally:
             database.close()
 
-        # 회원 여부에 따른 결과 반환
-        if user:
-            return {'is_member': True}, 200
-        else:
-            return {'is_member': False}, 200
+        # JWT 토큰 생성
+        access_token = create_access_token(identity=id) if user else None
+        refresh_token = create_refresh_token(identity=id) if user else None
+
+        return {'is_member': user is not None, 'access_token': access_token, 'refresh_token': refresh_token}, 200
