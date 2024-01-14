@@ -19,7 +19,7 @@ class NotificationByCategoryAPI(Resource):
     @jwt_required()
     def get(self, category):
         # DB 예외 처리
-        try: 
+        try:
             # DB에서 category값에 맞는 알림 목록 가져오기
             database = Database()
             sql = f"SELECT id, member_category, date, day, time, location, schedule, message, memo FROM notification WHERE category = {category};"
@@ -30,7 +30,8 @@ class NotificationByCategoryAPI(Resource):
             else:
                 for idx, notification in enumerate(notification_list):
                     # date, day, time, category를 문자열로 변경
-                    notification_list[idx]['date'] = notification['date'].strftime('%Y-%m-%d')
+                    if notification['date']:
+                        notification_list[idx]['date'] = notification['date'].strftime('%Y-%m-%d')
                     notification_list[idx]['day'] = convert_to_string(NotificationEnum.DAY_CATEGORY, notification['day'])
                     notification_list[idx]['time'] = str(notification['time'])
                     notification_list[idx]['member_category'] = convert_to_string(NotificationEnum.MEMBER_CATEGORY, notification['member_category'])
@@ -196,7 +197,7 @@ class NotificationByCategoryAPI(Resource):
 @notification.route('/users')
 class NotificationUserListAPI(Resource):
     # 회원 목록 얻기
-    @notification.response(200, 'OK', [AdminNotificationDTO.model_user])
+    @notification.response(200, 'OK', [AdminNotificationDTO.model_admin_notification_user])
     @notification.response(400, 'Bad Request', AdminNotificationDTO.response_message)
     @notification.doc(security='apiKey')
     @jwt_required()
@@ -221,7 +222,7 @@ class NotificationUserListAPI(Resource):
 @notification.route('/payment-period')
 class NotificationPaymentPeriodAPI(Resource):
     # 전체 월별 회비 기간 얻기
-    @notification.response(200, 'OK', [AdminNotificationDTO.model_payment_period])
+    @notification.response(200, 'OK', [AdminNotificationDTO.model_admin_notification_payment_period])
     @notification.response(400, 'Bad Request', AdminNotificationDTO.response_message)
     @notification.doc(security='apiKey')
     @jwt_required()
