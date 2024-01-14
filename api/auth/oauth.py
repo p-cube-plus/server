@@ -10,6 +10,8 @@ from flask_jwt_extended import (
 from database.database import Database
 import random, sms
 from utils.dto import OAuthDTO
+from utils.enum_tool import NotificationEnum, convert_to_string
+from utils import fcm
 
 config = configparser.ConfigParser()
 config.read('config/config.ini', encoding='utf-8')
@@ -178,8 +180,19 @@ class OauthUserCheckAPI(Resource):
         try:
             # DB의 유저 테이블에 id가 존재하는지 확인
             database = Database()
-            sql = f"SELECT id FROM users WHERE id = '{id}';"
+            sql = f"SELECT id, part_index FROM users WHERE id = '{id}';"
             user = database.execute_one(sql)
+
+            # 회원인 경우
+            if user:
+                # FCM 토큰을 DB에 저장
+                sql = f"UPDATE users SET fcm_token = '{user_info['fcm_token']}' WHERE id = '{id}';"
+                database.execute(sql)
+                database.commit()
+
+                # FCM topic 구독
+                fcm.subscribe([user_info['fcm_token']], convert_to_string(NotificationEnum.FCM_TOPIC, user['part_index']))
+                fcm.subscribe([user_info['fcm_token']], 'global')
         except:
             return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!'}, 400
         finally:
