@@ -183,7 +183,7 @@ class OauthUserCheckAPI(Resource):
             sql = f"SELECT id, part_index FROM users WHERE id = '{id}';"
             user = database.execute_one(sql)
 
-            # 회원 여부에 따른 결과 반환
+            # 회원인 경우
             if user:
                 # FCM 토큰을 DB에 저장
                 sql = f"UPDATE users SET fcm_token = '{user_info['fcm_token']}' WHERE id = '{id}';"
