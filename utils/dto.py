@@ -438,7 +438,7 @@ class OAuthDTO:
     })
 
     response_oauth_sms_validation = api.model('response_oauth_sms_validation', {
-        'is_valid': fields.Boolean(description='SMS API 정상 호출 여부', example=True)
+        'is_success': fields.Boolean(description='SMS API 정상 호출 여부', example=True)
     })
 
     response_oauth_code_result = api.model('response_oauth_result', {
