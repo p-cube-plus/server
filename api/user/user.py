@@ -118,3 +118,64 @@ class UserProjectAPI(Resource):
                 project_list[idx]['is_able_inquiry'] = True if project['is_able_inquiry'] else False
 
             return project_list, 200
+        
+@user.route("/user/setting/notification")
+class UserNotificationSettingAPI(Resource):
+    @user.response(200, 'OK', UserDTO.model_user_notification_setting)
+    @user.response(400, 'Bad Request', UserDTO.response_message)
+    @user.doc(security='apiKey')
+    @jwt_required()
+    def get(self):
+        user_id = get_jwt_identity()
+        
+        # DB 예외 처리
+        try:
+            # DB에서 회원 알림 설정 정보 얻기
+            database = Database()
+            sql = f"SELECT * FROM notification_setting WHERE user_id = '{user_id}';"
+            setting = database.execute_one(sql)
+        except:
+            return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!'}, 400
+        finally:
+            database.close()
+
+        # 불필요한 컬럼 제거
+        setting.pop('user_id')
+
+        # index를 Boolean 값으로 변경
+        for key in setting.keys():
+            setting[key] = True if setting[key] else False
+
+        return setting, 200
+
+    @user.expect(UserDTO.model_user_notification_setting, validate=True)
+    @user.response(200, 'OK', UserDTO.response_message)
+    @user.response(400, 'Bad Request', UserDTO.response_message)
+    @user.doc(security='apiKey')
+    @jwt_required()
+    def put(self):
+        user_id = get_jwt_identity()
+        setting = request.get_json()
+
+        # DB 예외 처리
+        try:
+            # 회원 알림 설정을 DB에 저장
+            database = Database()
+
+            sql = "INSERT INTO notification_setting (user_id, permission, regular_meeting, part_meeting, membership_fee, cleaning, book_rental) "\
+                "VALUES(%s, %s, %s, %s, %s, %s, %s) "\
+                "ON DUPLICATE KEY UPDATE permission = %s, regular_meeting = %s, part_meeting = %s, membership_fee = %s, cleaning = %s, book_rental = %s;"
+            
+            value = (user_id, setting['permission'], setting['regular_meeting'], setting['part_meeting'], 
+                    setting['membership_fee'], setting['cleaning'], setting['book_rental'],
+                    setting['permission'], setting['regular_meeting'], setting['part_meeting'], 
+                    setting['membership_fee'], setting['cleaning'], setting['book_rental'])
+
+            database.execute(sql, value)
+            database.commit()
+        except:
+            return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!'}, 400
+        finally:
+            database.close()
+        
+        return {'message': '회원의 알림 설정 정보를 수정했어요 :)'}, 200

@@ -390,6 +390,15 @@ class UserDTO:
         'message': fields.String(description='결과 메시지', example="결과 메시지")
     })
 
+    model_user_notification_setting = api.model('model_user_notification_setting', {
+        'permission': fields.Boolean(description='알림 허용 여부', example=True),
+        'regular_meeting': fields.Boolean(description='정기 회의 알림', example=True),
+        'part_meeting': fields.Boolean(description='파트 회의 알림', example=True),
+        'membership_fee': fields.Boolean(description='회비 알림', example=True),
+        'cleaning': fields.Boolean(description='청소 알림', example=True),
+        'book_rental': fields.Boolean(description='도서 대여 알림', example=True),
+    })
+
 class ProjectDTO:
     api = Namespace('project', description='프로젝트 참여 내역')
 
