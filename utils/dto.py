@@ -465,3 +465,30 @@ class AuthDTO:
     response_logout_message = api.model('reponse_logout_message', {
         'message': fields.String(desciption='로그아웃 결과 메시지', example="Access 토큰이 성공적으로 제거되었어요 :)")
     })
+
+class NotificationDTO:
+    api = Namespace('notification', description='유저별 알림 상태')
+
+    model_notification_status = api.model('model_notification_status', {
+        'id': fields.Integer(description='알림 ID', example=1),
+        'is_read': fields.Boolean(description='읽음 여부', example=False)
+    })
+
+    model_user_notification_id = api.model('model_user_notificatoin', {
+        'id': fields.Integer(description='알림 ID', example=1)
+    })
+
+    model_user_notification = api.model('model_user_notification', {
+        'id': fields.Integer(description='알림 ID'),
+        'date': nullable(fields.String)(description='날짜'),
+        'day': nullable(fields.String)(description='요일'),
+        'time': fields.String(description='시간'),
+        'location': nullable(fields.String)(description='장소'),
+        'schedule': nullable(fields.String)(description='일정'),
+        'message': nullable(fields.String)(desciption='메시지'),
+        'is_read': fields.Boolean(description='읽음 여부')
+    })
+
+    response_notification_message = api.model('response_notification_message', {
+        'message': fields.String(description='결과 메시지', example="결과 메시지")
+    })
