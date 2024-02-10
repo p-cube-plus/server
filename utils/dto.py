@@ -113,7 +113,7 @@ class AdminAttendanceDTO:
     api = Namespace('attendance', description='임원진 출석 관리')
 
     model_attendance = api.model('model_attendance', {
-        'id': fields.Integer(description='ID'),
+        'id': fields.Integer(description='ID', example=0),
         'date': fields.Date(description='출석 날짜', example='2023-09-19'),
         'first_auth_start_time': nullable(fields.String)(description='1차 인증 시작 시간', example='16:55:00'),
         'first_auth_end_time': nullable(fields.String)(description='1차 인증 종료 시간', example='16:55:00'),
@@ -122,7 +122,7 @@ class AdminAttendanceDTO:
     })
 
     model_admin_attendance_user = api.model('model_admin_attendance_user', {
-        'id': fields.String(description='ID'),
+        'id': fields.String(description='회원 ID'),
         'name': fields.String(description='이름', example='홍길동'),
         'grade': fields.Integer(description='학년', example=4),
         'part': fields.String(description='소속 파트', enum=['디자인', '아트', '프로그래밍']),
@@ -133,14 +133,24 @@ class AdminAttendanceDTO:
     })
 
     model_user_attendance = api.model('model_user_attendance', {
-        'user_id': fields.String(description='ID'),
+        'attendance_id': fields.Integer(description='출석 ID'),
+        'user_id': fields.String(description='회원 ID'),
         'state': nullable(fields.String)(description='출석 상태', enum=['출석', '지각', '불참', None]),
         'first_auth_time': nullable(fields.String)(description='1차 인증 시간', example='16:55:00'),
         'second_auth_time': nullable(fields.String)(description='2차 인증 시간', example='16:55:00')
     })
 
-    response_attendance = api.model('response_attendance', {
+    model_attendance_without_id = api.model('model_attendance_without_id', {
+        'category': fields.String(description='출석 종류', example='정기'),
         'date': fields.Date(description='출석 날짜', example='2023-09-19'),
+        'first_auth_start_time': fields.String(description='1차 인증 시작 시간', example='16:55:00'),
+        'first_auth_end_time': fields.String(description='1차 인증 종료 시간', example='16:55:00'),
+        'second_auth_start_time': fields.String(description='2차 인증 시작 시간', example='16:55:00'),
+        'second_auth_end_time': fields.String(description='2차 인증 종료 시간', example='16:55:00')
+    })
+
+    response_attendance = api.model('response_attendance', {
+        'id': fields.Integer(description='ID', example=0),
         'first_auth_start_time': fields.String(description='1차 인증 시작 시간', example='16:55:00'),
         'first_auth_end_time': fields.String(description='1차 인증 종료 시간', example='16:55:00'),
         'second_auth_start_time': fields.String(description='2차 인증 시작 시간', example='16:55:00'),
@@ -155,12 +165,32 @@ class AdminAttendanceDTO:
         'message': fields.String(description='결과 메시지', example="결과 메시지")
     })
 
+    query_date_and_category = api.parser().add_argument(
+        'date', type=str, help='출석 일자'
+    ).add_argument(
+        'category', type=str, help='출석 종류'
+    )
+
+    query_category = api.parser().add_argument(
+        'category', type=str, help='출석 종류'
+    )
+
     query_date = api.parser().add_argument(
         'date', type=str, help='출석 일자'
+    )
+
+    query_ids = api.parser().add_argument(
+        'user_id', type=str, help='유저 ID'
+    ).add_argument(
+        'attendance_id', type=int, help='출석 ID'
     )
     
     query_user_id = api.parser().add_argument(
         'user_id', type=str, help='유저 ID'
+    )
+
+    query_raw_attendance_id = api.parser().add_argument(
+        'id', type=int, help='ID'
     )
     
     query_attendance_id = api.parser().add_argument(
