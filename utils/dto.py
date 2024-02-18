@@ -55,12 +55,24 @@ class AdminNotificationDTO:
     model_notification = api.model('model_notification', {
         'id': fields.Integer(description='알림 ID (POST 시에는 유효하지 않습니다.)'),
         'member_category': fields.String(description="알림 대상자 종류", enum=['활동 중인 회원 전체', '활동 중인 정회원', '활동 중인 수습회원', '기타 선택']),
-        'time': fields.String(description='알림 시간'),
-        'start_date': fields.String(description='시작일'),
-        'end_date': fields.String(description='종료일'),
-        'day': nullable(fields.String)(description="요일", example='월요일'),
-        'cycle': fields.String(description='알림 주기'),
-        'message': nullable(fields.String)(description='알림 메시지'),
+        'date': nullable(fields.String)(description='날짜'),
+        'day': nullable(fields.String)(description='요일'),
+        'time': fields.String(description='시간'),
+        'location': nullable(fields.String)(description='장소'),
+        'schedule': nullable(fields.String)(description='일정'),
+        'message': nullable(fields.String)(desciption='메시지 기타 알림인 경우 설정)'),
+        'memo': nullable(fields.String)(description='메모'),
+        'member_list': fields.List(fields.String, description="알림 대상자 목록('알림 대상자 종류가 '기타 선택'이 아닌 경우 빈 리스트)")
+    })
+
+    model_notification_without_id = api.model('model_notification_without_id', {
+        'member_category': fields.String(description="알림 대상자 종류", enum=['활동 중인 회원 전체', '활동 중인 정회원', '활동 중인 수습회원', '기타 선택']),
+        'date': nullable(fields.String)(description='날짜'),
+        'day': nullable(fields.String)(description='요일'),
+        'time': fields.String(description='시간'),
+        'location': nullable(fields.String)(description='장소'),
+        'schedule': nullable(fields.String)(description='일정'),
+        'message': nullable(fields.String)(desciption='메시지 기타 알림인 경우 설정)'),
         'memo': nullable(fields.String)(description='메모'),
         'member_list': fields.List(fields.String, description="알림 대상자 목록('알림 대상자 종류가 '기타 선택'이 아닌 경우 빈 리스트)")
     })
@@ -101,38 +113,40 @@ class AdminAttendanceDTO:
     api = Namespace('attendance', description='임원진 출석 관리')
 
     model_attendance = api.model('model_attendance', {
-        'id': fields.Integer(description='ID'),
+        'id': fields.Integer(description='ID', example=0),
         'date': fields.Date(description='출석 날짜', example='2023-09-19'),
-        'first_auth_start_time': nullable(fields.String)(description='1차 인증 시작 시간', example='16:55:00'),
-        'first_auth_end_time': nullable(fields.String)(description='1차 인증 종료 시간', example='16:55:00'),
-        'second_auth_start_time': nullable(fields.String)(description='2차 인증 시작 시간', example='16:55:00'),
-        'second_auth_end_time': nullable(fields.String)(description='2차 인증 종료 시간', example='16:55:00'),
+        'first_auth_start_time': nullable(fields.String)(description='1차 인증 시작 시간', example='16:55:00 (nullable)'),
+        'first_auth_end_time': nullable(fields.String)(description='1차 인증 종료 시간', example='16:55:00 (nullable)'),
+        'second_auth_start_time': nullable(fields.String)(description='2차 인증 시작 시간', example='16:55:00 (nullable)'),
+        'second_auth_end_time': nullable(fields.String)(description='2차 인증 종료 시간', example='16:55:00 (nullable)'),
     })
 
     model_admin_attendance_user = api.model('model_admin_attendance_user', {
-        'id': fields.String(description='ID'),
+        'id': fields.String(description='회원 ID'),
         'name': fields.String(description='이름', example='홍길동'),
         'grade': fields.Integer(description='학년', example=4),
-        'part': fields.String(description='소속 파트', enum=['디자인', '아트', '프로그래밍']),
-        'rest_type': fields.String(description='활동 상태', enum=['활동', '일반휴학', '군휴학']),
-        'state': nullable(fields.String)(description='출석 상태', enum=['출석', '지각', '불참', None]),
-        'first_auth_time': nullable(fields.String)(description='1차 인증 시간', example='16:55:00'),
-        'second_auth_time': nullable(fields.String)(description='2차 인증 시간', example='16:55:00')
+        'part': fields.String(description='소속 파트', example='디자인 or 아트 or 프로그래밍'),
+        'rest_type': fields.String(description='활동 상태', example='활동 or 일반휴학 or 군휴학'),
+        'state': nullable(fields.String)(description='출석 상태', example='출석 or 지각 or 불참 (nullable)'),
+        'first_auth_time': nullable(fields.String)(description='1차 인증 시간', example='16:55:00 (nullable)'),
+        'second_auth_time': nullable(fields.String)(description='2차 인증 시간', example='16:55:00 (nullable)')
     })
 
     model_user_attendance = api.model('model_user_attendance', {
-        'user_id': fields.String(description='ID'),
-        'state': nullable(fields.String)(description='출석 상태', enum=['출석', '지각', '불참', None]),
-        'first_auth_time': nullable(fields.String)(description='1차 인증 시간', example='16:55:00'),
-        'second_auth_time': nullable(fields.String)(description='2차 인증 시간', example='16:55:00')
+        'attendance_id': fields.Integer(description='출석 ID'),
+        'user_id': fields.String(description='회원 ID'),
+        'state': nullable(fields.String)(description='출석 상태', example='출석 or 지각 or 불참 (nullable)'),
+        'first_auth_time': nullable(fields.String)(description='1차 인증 시간', example='16:55:00 (nullable)'),
+        'second_auth_time': nullable(fields.String)(description='2차 인증 시간', example='16:55:00 (nullable)')
     })
 
-    response_attendance = api.model('response_attendance', {
+    model_attendance_without_id = api.model('model_attendance_without_id', {
+        'category': fields.String(description='출석 종류', example='정기'),
         'date': fields.Date(description='출석 날짜', example='2023-09-19'),
-        'first_auth_start_time': fields.String(description='1차 인증 시작 시간', example='16:55:00'),
-        'first_auth_end_time': fields.String(description='1차 인증 종료 시간', example='16:55:00'),
-        'second_auth_start_time': fields.String(description='2차 인증 시작 시간', example='16:55:00'),
-        'second_auth_end_time': fields.String(description='2차 인증 종료 시간', example='16:55:00')
+        'first_auth_start_time': nullable(fields.String)(description='1차 인증 시작 시간', example='16:55:00 (nullable)'),
+        'first_auth_end_time': nullable(fields.String)(description='1차 인증 종료 시간', example='16:55:00 (nullable)'),
+        'second_auth_start_time': nullable(fields.String)(description='2차 인증 시작 시간', example='16:55:00 (nullable)'),
+        'second_auth_end_time': nullable(fields.String)(description='2차 인증 종료 시간', example='16:55:00 (nullable)')
     })
 
     response_user_list = api.model('model_user_list', {
@@ -143,12 +157,24 @@ class AdminAttendanceDTO:
         'message': fields.String(description='결과 메시지', example="결과 메시지")
     })
 
-    query_date = api.parser().add_argument(
+    query_date_and_category = api.parser().add_argument(
         'date', type=str, help='출석 일자'
+    ).add_argument(
+        'category', type=str, help='출석 종류'
+    )
+
+    query_ids = api.parser().add_argument(
+        'user_id', type=str, help='유저 ID'
+    ).add_argument(
+        'attendance_id', type=int, help='출석 ID'
     )
     
     query_user_id = api.parser().add_argument(
         'user_id', type=str, help='유저 ID'
+    )
+
+    query_raw_attendance_id = api.parser().add_argument(
+        'id', type=int, help='ID'
     )
     
     query_attendance_id = api.parser().add_argument(
@@ -421,11 +447,12 @@ class OAuthDTO:
 
     model_oauth_user = api.model('model_oauth_user', {
         'name': fields.String(desciption='회원 이름', example='홍길동'),
-        'phone_number': fields.String(description='회원 휴대폰 번호', example='010-XXXX-YYYY')
+        'phone_number': fields.String(description='회원 휴대폰 번호', example='010-XXXX-YYYY'),
+        'fcm_token': fields.String(description='회원 FCM 토큰')
     })
 
     response_oauth_sms_validation = api.model('response_oauth_sms_validation', {
-        'is_valid': fields.Boolean(description='SMS API 정상 호출 여부', example=True)
+        'is_success': fields.Boolean(description='SMS API 정상 호출 여부', example=True)
     })
 
     response_oauth_code_result = api.model('response_oauth_result', {
@@ -433,7 +460,9 @@ class OAuthDTO:
     })
 
     response_oauth_user = api.model('response_oauth_user', {
-        'is_member': fields.Boolean(description='가입 여부', example=True)
+        'is_member': fields.Boolean(description='가입 여부', example=True),
+        'access_token': nullable(fields.String)(desription='엑세스 토큰', example='string (nullable)'),
+        'refresh_token': nullable(fields.String)(desription='리프레시 토큰', example='string (nullable)'),
     })
 
     response_oauth_message = api.model('response_oauth_message', {
