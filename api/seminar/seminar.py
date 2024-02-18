@@ -12,6 +12,7 @@ class SeminarUserAPI(Resource):
     # 회원의 세미나 목록 얻기
     @seminar.expect(SeminarDTO.query_user_id, validate=True)
     @seminar.response(200, 'OK', [SeminarDTO.model_seminar_with_id])
+    @seminar.response(400, 'Bad Request', SeminarDTO.seminar_response_message)
     @seminar.doc(security='apiKey')
     @jwt_required()
     def get(self):
@@ -40,6 +41,7 @@ class SeminarUserAPI(Resource):
     # 세미나 정보 추가
     @seminar.expect(SeminarDTO.query_user_id, SeminarDTO.model_seminar, validate=True)
     @seminar.response(201, 'Created', SeminarDTO.seminar_response_message)
+    @seminar.response(400, 'Bad Request', SeminarDTO.seminar_response_message)
     @seminar.doc(security='apiKey')
     @jwt_required()
     def post(self):
@@ -70,6 +72,7 @@ class SeminarUserAPI(Resource):
     # 세미나 정보 수정
     @seminar.expect(SeminarDTO.query_user_id, SeminarDTO.model_seminar_with_id, validate=True)
     @seminar.response(200, 'OK', SeminarDTO.seminar_response_message)
+    @seminar.response(400, 'Bad Request', SeminarDTO.seminar_response_message)
     @seminar.doc(security='apiKey')
     @jwt_required()
     def put(self):
@@ -101,6 +104,7 @@ class SeminarUserAPI(Resource):
     # 세미나 정보 삭제
     @seminar.expect(SeminarDTO.query_seminar_id, validate=True)
     @seminar.response(200, 'OK', SeminarDTO.seminar_response_message)
+    @seminar.response(400, 'Bad Request', SeminarDTO.seminar_response_message)
     @seminar.doc(security='apiKey')
     @jwt_required()
     def delete(self):
