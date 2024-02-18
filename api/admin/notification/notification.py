@@ -6,49 +6,50 @@ from utils.dto import AdminNotificationDTO
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from utils.enum_tool import convert_to_index, convert_to_string, NotificationEnum
 from utils.aes_cipher import AESCipher
+from utils import fcm
 
 notification = AdminNotificationDTO.api
 
 @notification.route('/category/<int:category>')
 class NotificationByCategoryAPI(Resource):
     # category에 따른 알림 목록 얻기
-    @notification.response(200, 'OK', AdminNotificationDTO.response_notification_list)
+    @notification.response(200, 'OK', [AdminNotificationDTO.model_notification])
     @notification.response(400, 'Bad Request', AdminNotificationDTO.response_message)
     @notification.doc(security='apiKey')
     @jwt_required()
     def get(self, category):
         # DB 예외 처리
-        try: 
+        try:
             # DB에서 category값에 맞는 알림 목록 가져오기
             database = Database()
-            sql = f"SELECT id, member_category, time, start_date, end_date, day, cycle, message, memo FROM notification WHERE category = {category};"
+            sql = f"SELECT id, member_category, date, day, time, location, schedule, message, memo FROM notification WHERE category = {category};"
             notification_list = database.execute_all(sql)
+
+            if not notification_list: # 알림이 없을 때 처리
+                return [], 200
+            else:
+                for idx, notification in enumerate(notification_list):
+                    # date, day, time, category를 문자열로 변경
+                    if notification['date']:
+                        notification_list[idx]['date'] = notification['date'].strftime('%Y-%m-%d')
+                    notification_list[idx]['day'] = convert_to_string(NotificationEnum.DAY_CATEGORY, notification['day'])
+                    notification_list[idx]['time'] = str(notification['time'])
+                    notification_list[idx]['member_category'] = convert_to_string(NotificationEnum.MEMBER_CATEGORY, notification['member_category'])
+
+                    if notification_list[idx]['member_category'] == '기타 선택':
+                        # DB에서 알림 대상자 목록 가져오기
+                        sql = f"SELECT user_id FROM notification_member WHERE notification_id = {notification['id']};"
+                        member_list = database.execute_all(sql)
+                        notification_list[idx]['member_list'] = [member['user_id'] for member in member_list]
+                
+                return notification_list, 200
         except:
-            database.close()
             return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!'}, 400
-
-        if not notification_list: # 알림이 없을 때 처리
+        finally:
             database.close()
-            return {'notification_list': []}, 200
-        else:
-            for idx, notification in enumerate(notification_list):
-                # time, date, category, day를 문자열로 변경
-                notification_list[idx]['time'] = str(notification['time'])
-                notification_list[idx]['start_date'] = notification['start_date'].strftime('%Y-%m-%d')
-                notification_list[idx]['end_date'] = notification['end_date'].strftime('%Y-%m-%d')
-                notification_list[idx]['member_category'] = convert_to_string(NotificationEnum.MEMBER_CATEGORY, notification['member_category'])
-                notification_list[idx]['day'] = convert_to_string(NotificationEnum.DAY_CATEGORY, notification['day'])
-
-                # DB에서 알림 대상자 목록 가져오기
-                sql = f"SELECT user_id FROM notification_member WHERE notification_id = {notification['id']};"
-                member_list = database.execute_all(sql)
-                notification_list[idx]['member_list'] = [member['user_id'] for member in member_list]
-            
-            database.close()
-            return {'notification_list': notification_list}, 200
     
     # 알림 정보 추가
-    @notification.expect(AdminNotificationDTO.model_notification, validate=True)
+    @notification.expect(AdminNotificationDTO.model_notification_without_id, validate=True)
     @notification.response(200, 'OK', AdminNotificationDTO.response_message)
     @notification.response(400, 'Bad Request', AdminNotificationDTO.response_message)
     @notification.doc(security='apiKey')
@@ -61,27 +62,51 @@ class NotificationByCategoryAPI(Resource):
         notification['member_category'] = convert_to_index(NotificationEnum.MEMBER_CATEGORY, notification['member_category'])
         notification['day'] = convert_to_index(NotificationEnum.DAY_CATEGORY, notification['day'])
         
+        # 회의 알림인 경우 메시지 설정
+        if category in NotificationEnum.FCM_TOPIC.keys():
+            notification['message'] = f"{convert_to_string(NotificationEnum.CATEGORY, category)} "\
+                f"{'파트' if category != 3 else ''} 회의가 {notification['schedule']}에 시작됩니다."
+
         # DB 예외 처리
         try:
             database = Database()
 
             # 알림 정보를 DB에 추가
-            sql = "INSERT INTO notification "\
-                f"VALUES(NULL, {category}, {notification['member_category']}, '{notification['time']}', "\
-                f"'{notification['start_date']}', '{notification['end_date']}', {notification['day']}, "\
-                f"'{notification['cycle']}', '{notification['message']}', '{notification['memo']}');"
-            database.execute(sql)
+            sql = "INSERT INTO notification VALUES(NULL, %s, %s, %s, %s, %s, %s, %s, %s, %s);"
+            values = (category, notification['member_category'], notification['date'], notification['day'], notification['time'], \
+                        notification['location'], notification['schedule'], notification['message'], notification['memo'])
+            database.execute(sql, values)
 
             # 추가한 알림 정보의 id값 가져오기
             id = database.cursor.lastrowid
 
-            if notification['member_list']:
-                # 알림 대상자 정보를 DB에 추가
-                sql = f"INSERT INTO notification_member VALUES ({id}, %s);"
-                values = [(member,) for member in notification['member_list']]
-                database.execute_many(sql, values)
+            # 알림 대상자 설정
+            if category == 3: # 정기 회의인 경우
+                sql = f"SELECT id FROM users WHERE rest_type = -1;"
+                notification['member_list'] = [user['id'] for user in database.execute_all(sql)]     
+            elif category <= 2: # 파트 회의인 경우
+                sql = f"SELECT id FROM users WHERE rest_type = -1 AND part_index = {category};"
+                notification['member_list'] = [user['id'] for user in database.execute_all(sql)]
+            
+            # 알림 대상자 정보를 DB에 추가
+            sql = f"INSERT INTO notification_member VALUES ({id}, %s, 0, 0);"
+            values = [(member,) for member in notification['member_list']]
+            database.execute_many(sql, values)
 
             database.commit()
+
+            # FCM 알림 예약
+            if category in NotificationEnum.FCM_TOPIC.keys(): # 회의 알림인 경우
+                # 내용 및 주제 설정
+                title = "회의 알림"
+                body = notification['message']
+                topic = convert_to_string(NotificationEnum.FCM_TOPIC, category)
+
+                # 알림 예약
+                fcm.schedule_message(str(id), title, body, notification['time'], date=notification['date'], day=notification['day'], topic=topic)
+            else: # 청소 및 기타 알림인 경우
+                # 추후 구현 예정
+                pass
         except:
             return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!'}, 400
         finally:
@@ -103,30 +128,56 @@ class NotificationByCategoryAPI(Resource):
         notification['member_category'] = convert_to_index(NotificationEnum.MEMBER_CATEGORY, notification['member_category'])
         notification['day'] = convert_to_index(NotificationEnum.DAY_CATEGORY, notification['day'])
 
-        print(notification)
+        # 회의 알림인 경우 메시지 설정
+        if category in NotificationEnum.FCM_TOPIC.keys():
+            notification['message'] = f"{convert_to_string(NotificationEnum.CATEGORY, category)} "\
+                f"{'파트' if category != 3 else ''} 회의가 {notification['schedule']}에 시작됩니다."
+
         # DB 예외 처리
         try:
             database = Database()
 
             # 수정된 알림 정보를 DB에 반영
             sql = "UPDATE notification SET "\
-                f"category = {category}, member_category = {notification['member_category']}, time = '{notification['time']}', "\
-                f"start_date = '{notification['start_date']}', end_date = '{notification['end_date']}', day = {notification['day']}, "\
-                f"cycle = '{notification['cycle']}', message = '{notification['message']}', memo = '{notification['memo']}' "\
-                f"WHERE id = {notification['id']};"
-            database.execute(sql)
+                "category = %s, member_category = %s, date = %s, "\
+                "day = %s, time = %s, location = %s, "\
+                "schedule = %s, message = %s, memo = %s "\
+                "WHERE id = %s;"
+            values = (category, notification['member_category'], notification['date'], notification['day'], notification['time'], \
+                        notification['location'], notification['schedule'], notification['message'], notification['memo'], notification['id'])
+            database.execute(sql, values)
 
             # 기존 알림 대상자 정보를 DB에서 삭제
             sql = f"DELETE FROM notification_member WHERE notification_id = {notification['id']};"
             database.execute(sql)
             
-            if notification['member_list']:
-                # 새로운 알림 대상자 정보를 DB에 추가
-                sql = f"INSERT INTO notification_member VALUES ({notification['id']}, %s);"
-                values = [(member,) for member in notification['member_list']]
-                database.execute_many(sql, values)
+            # 알림 대상자 설정
+            if category == 3: # 정기 회의인 경우
+                sql = f"SELECT id FROM users WHERE rest_type = -1;"
+                notification['member_list'] = [user['id'] for user in database.execute_all(sql)]          
+            elif category <= 2: # 파트 회의인 경우
+                sql = f"SELECT id FROM users WHERE rest_type = -1 AND part_index = {category};"
+                notification['member_list'] = [user['id'] for user in database.execute_all(sql)]
+
+            # 새로운 알림 대상자 정보를 DB에 추가
+            sql = f"INSERT INTO notification_member VALUES ({notification['id']}, %s, 0, 0);"
+            values = [(member,) for member in notification['member_list']]
+            database.execute_many(sql, values)
 
             database.commit()
+
+            # FCM 알림 예약
+            if category in NotificationEnum.FCM_TOPIC.keys(): # 회의 알림인 경우
+                # 내용 및 주제 설정
+                title = "회의 알림"
+                body = notification['message']
+                topic = convert_to_string(NotificationEnum.FCM_TOPIC, category)
+
+                # 알림 예약
+                fcm.schedule_message(str(notification['id']), title, body, notification['time'], date=notification['date'], day=notification['day'], topic=topic)
+            else: # 청소 및 기타 알림인 경우
+                # 추후 구현 예정
+                pass
         except:
             return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!'}, 400
         finally:
@@ -156,6 +207,9 @@ class NotificationByCategoryAPI(Resource):
             database.execute(sql)
 
             database.commit()
+
+            # FCM 알림 예약 취소
+            fcm.remove_message(str(notification_id))
         except:
             return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!'}, 400
         finally:
@@ -166,7 +220,7 @@ class NotificationByCategoryAPI(Resource):
 @notification.route('/users')
 class NotificationUserListAPI(Resource):
     # 회원 목록 얻기
-    @notification.response(200, 'OK', AdminNotificationDTO.response_user_list)
+    @notification.response(200, 'OK', [AdminNotificationDTO.model_admin_notification_user])
     @notification.response(400, 'Bad Request', AdminNotificationDTO.response_message)
     @notification.doc(security='apiKey')
     @jwt_required()
@@ -186,12 +240,12 @@ class NotificationUserListAPI(Resource):
             return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!'}, 400
         finally:
             database.close()
-        return {'user_list': user_list}, 200
+        return user_list, 200
 
 @notification.route('/payment-period')
 class NotificationPaymentPeriodAPI(Resource):
     # 전체 월별 회비 기간 얻기
-    @notification.response(200, 'OK', AdminNotificationDTO.response_payment_period_list)
+    @notification.response(200, 'OK', [AdminNotificationDTO.model_admin_notification_payment_period])
     @notification.response(400, 'Bad Request', AdminNotificationDTO.response_message)
     @notification.doc(security='apiKey')
     @jwt_required()
@@ -215,7 +269,7 @@ class NotificationPaymentPeriodAPI(Resource):
             database.close()
 
         if not payment_period_list: # 납부 기간이 없을 때 처리
-            return {'payment_period_list': []}, 200
+            return [], 200
         else:
             # 납부 기간 내역의 날짜 데이터들을 문자열로 변경
             for idx, payment_period in enumerate(payment_period_list):
@@ -223,4 +277,4 @@ class NotificationPaymentPeriodAPI(Resource):
                 payment_period_list[idx]['start_date'] = payment_period['start_date'].strftime('%Y-%m-%d')
                 payment_period_list[idx]['end_date'] = payment_period['end_date'].strftime('%Y-%m-%d')
             
-            return {'payment_period_list': payment_period_list}, 200
+            return payment_period_list, 200

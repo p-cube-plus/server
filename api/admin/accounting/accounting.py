@@ -23,7 +23,7 @@ def get_current_month():
 @accounting.route('')
 class MembershipFeeCheckAPI(Resource):
     # 월별 회비 납부 내역 얻기
-    @accounting.response(200, 'OK', AdminAccountingDTO.model_monthly_payment_list)
+    @accounting.response(200, 'OK', [AdminAccountingDTO.model_monthly_payment])
     @accounting.response(400, 'Bad Request', AdminAccountingDTO.response_message)
     @accounting.doc(security='apiKey')
     @jwt_required()
@@ -93,14 +93,14 @@ class MembershipFeeCheckAPI(Resource):
             monthly_payment_list.append(monthly_payment)
 
         if not monthly_payment_list: # 월별 회비 납부 내역이 없을 때의 처리
-            return {'monthly_payment_list': []}, 200
+            return [], 200
         else:
-            return {'monthly_payment_list': monthly_payment_list}, 200
+            return monthly_payment_list, 200
 
 @accounting.route('/period')
 class MembershipFeePeriodAPI(Resource):
     # 전체 월별 회비 기간 얻기
-    @accounting.response(200, 'OK', AdminAccountingDTO.model_payment_period_list)
+    @accounting.response(200, 'OK', [AdminAccountingDTO.model_payment_period])
     @accounting.response(400, 'Bad Request', AdminAccountingDTO.response_message)
     @accounting.doc(security='apiKey')
     @jwt_required()
@@ -123,7 +123,7 @@ class MembershipFeePeriodAPI(Resource):
             database.close()
 
         if not payment_period_list: # 납부 기간이 없을 때 처리
-            return {'payment_period_list': []}, 200
+            return [], 200
         else:
             # 납부 기간 내역의 날짜 데이터들을 문자열로 변경
             for idx, payment_period in enumerate(payment_period_list):
@@ -131,7 +131,7 @@ class MembershipFeePeriodAPI(Resource):
                 payment_period_list[idx]['start_date'] = payment_period['start_date'].strftime('%Y-%m-%d')
                 payment_period_list[idx]['end_date'] = payment_period['end_date'].strftime('%Y-%m-%d')
             
-            return {'payment_period_list': payment_period_list}, 200
+            return payment_period_list, 200
     
     # 특정 달 회비 기간 생성하기
     @accounting.expect(AdminAccountingDTO.model_payment_period, required=True)
