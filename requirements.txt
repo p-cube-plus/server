@@ -32,6 +32,7 @@ zipp==3.5.0
 pycryptodomex==3.18.0
 gspread==5.10.0
 python-memcached==1.59
+pymysql-pooling==1.0.6
 APScheduler==3.10.4
 backports.zoneinfo==0.2.1
 tzlocal==5.2
