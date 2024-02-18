@@ -74,7 +74,6 @@ class NotificationAPI(Resource):
             sql = f"DELETE FROM notification_member WHERE notification_id = {notification_id};"
             database.execute(sql)
             database.commit()
-            database.close()
         except:
             return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!'}, 400
         finally:
