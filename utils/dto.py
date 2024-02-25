@@ -54,7 +54,8 @@ class AdminNotificationDTO:
 
     model_notification = api.model('model_notification', {
         'id': fields.Integer(description='알림 ID (POST 시에는 유효하지 않습니다.)'),
-        'member_category': fields.String(description="알림 대상자 종류", enum=['활동 중인 회원 전체', '활동 중인 정회원', '활동 중인 수습회원', '기타 선택']),
+        'category': fields.String(description='알림 종류', example='디자인 or 아트 or 프로그래밍 or 정기 or 기타'),
+        'member_category': fields.String(description="알림 대상자 종류", example='활동 중인 회원 전체 or 활동 중인 정회원 or 활동 중인 수습회원 or 기타 선택'),
         'date': nullable(fields.String)(description='날짜'),
         'day': nullable(fields.String)(description='요일'),
         'time': fields.String(description='시간'),
@@ -66,7 +67,8 @@ class AdminNotificationDTO:
     })
 
     model_notification_without_id = api.model('model_notification_without_id', {
-        'member_category': fields.String(description="알림 대상자 종류", enum=['활동 중인 회원 전체', '활동 중인 정회원', '활동 중인 수습회원', '기타 선택']),
+        'category': fields.String(description='알림 종류', example='디자인 or 아트 or 프로그래밍 or 정기 or 기타'),
+        'member_category': fields.String(description="알림 대상자 종류", example='활동 중인 회원 전체 or 활동 중인 정회원 or 활동 중인 수습회원 or 기타 선택'),
         'date': nullable(fields.String)(description='날짜'),
         'day': nullable(fields.String)(description='요일'),
         'time': fields.String(description='시간'),
@@ -106,7 +108,11 @@ class AdminNotificationDTO:
     })
 
     query_notification_id = api.parser().add_argument(
-        'notification_id', type=str, help='알림 ID'
+        'id', type=str, help='알림 ID'
+    )
+
+    query_notification_category = api.parser().add_argument(
+        'category', type=str, help="알림 종류"
     )
 
 class AdminAttendanceDTO:

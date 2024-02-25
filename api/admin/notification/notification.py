@@ -10,19 +10,23 @@ from utils import fcm
 
 notification = AdminNotificationDTO.api
 
-@notification.route('/category/<int:category>')
+@notification.route('')
 class NotificationByCategoryAPI(Resource):
     # category에 따른 알림 목록 얻기
+    @notification.expect(AdminNotificationDTO.query_notification_category, validate=True)
     @notification.response(200, 'OK', [AdminNotificationDTO.model_notification])
     @notification.response(400, 'Bad Request', AdminNotificationDTO.response_message)
     @notification.doc(security='apiKey')
     @jwt_required()
-    def get(self, category):
+    def get(self):
+        # Query Parameter 데이터 읽어오기
+        category = convert_to_index(NotificationEnum.CATEGORY, request.args['category'])
+
         # DB 예외 처리
         try:
             # DB에서 category값에 맞는 알림 목록 가져오기
             database = Database()
-            sql = f"SELECT id, member_category, date, day, time, location, schedule, message, memo FROM notification WHERE category = {category};"
+            sql = f"SELECT id, category, member_category, date, day, time, location, schedule, message, memo FROM notification WHERE category = {category};"
             notification_list = database.execute_all(sql)
 
             if not notification_list: # 알림이 없을 때 처리
@@ -34,6 +38,7 @@ class NotificationByCategoryAPI(Resource):
                         notification_list[idx]['date'] = notification['date'].strftime('%Y-%m-%d')
                     notification_list[idx]['day'] = convert_to_string(NotificationEnum.DAY_CATEGORY, notification['day'])
                     notification_list[idx]['time'] = str(notification['time'])
+                    notification_list[idx]['category'] = convert_to_string(NotificationEnum.CATEGORY, notification['category'])
                     notification_list[idx]['member_category'] = convert_to_string(NotificationEnum.MEMBER_CATEGORY, notification['member_category'])
 
                     if notification_list[idx]['member_category'] == '기타 선택':
@@ -54,11 +59,12 @@ class NotificationByCategoryAPI(Resource):
     @notification.response(400, 'Bad Request', AdminNotificationDTO.response_message)
     @notification.doc(security='apiKey')
     @jwt_required()
-    def post(self, category):
+    def post(self):
         # Body 데이터 읽어오기
         notification = request.get_json()
         
         # category, day를 index로 변환
+        notification['category'] = convert_to_index(NotificationEnum.CATEGORY, notification['category'])
         notification['member_category'] = convert_to_index(NotificationEnum.MEMBER_CATEGORY, notification['member_category'])
         notification['day'] = convert_to_index(NotificationEnum.DAY_CATEGORY, notification['day'])
         
@@ -73,7 +79,7 @@ class NotificationByCategoryAPI(Resource):
 
             # 알림 정보를 DB에 추가
             sql = "INSERT INTO notification VALUES(NULL, %s, %s, %s, %s, %s, %s, %s, %s, %s);"
-            values = (category, notification['member_category'], notification['date'], notification['day'], notification['time'], \
+            values = (notification['category'], notification['member_category'], notification['date'], notification['day'], notification['time'], \
                         notification['location'], notification['schedule'], notification['message'], notification['memo'])
             database.execute(sql, values)
 
@@ -94,6 +100,8 @@ class NotificationByCategoryAPI(Resource):
             database.execute_many(sql, values)
 
             database.commit()
+
+            category = notification['category']
 
             # FCM 알림 예약
             if category in NotificationEnum.FCM_TOPIC.keys(): # 회의 알림인 경우
@@ -120,11 +128,12 @@ class NotificationByCategoryAPI(Resource):
     @notification.response(400, 'Bad Request', AdminNotificationDTO.response_message)
     @notification.doc(security='apiKey')
     @jwt_required()
-    def put(self, category):
+    def put(self):
         # Body 데이터 읽어오기
         notification = request.get_json()
 
         # category, day를 index로 변환
+        notification['category'] = convert_to_index(NotificationEnum.CATEGORY, notification['category'])
         notification['member_category'] = convert_to_index(NotificationEnum.MEMBER_CATEGORY, notification['member_category'])
         notification['day'] = convert_to_index(NotificationEnum.DAY_CATEGORY, notification['day'])
 
@@ -143,7 +152,7 @@ class NotificationByCategoryAPI(Resource):
                 "day = %s, time = %s, location = %s, "\
                 "schedule = %s, message = %s, memo = %s "\
                 "WHERE id = %s;"
-            values = (category, notification['member_category'], notification['date'], notification['day'], notification['time'], \
+            values = (notification['category'], notification['member_category'], notification['date'], notification['day'], notification['time'], \
                         notification['location'], notification['schedule'], notification['message'], notification['memo'], notification['id'])
             database.execute(sql, values)
 
@@ -165,6 +174,8 @@ class NotificationByCategoryAPI(Resource):
             database.execute_many(sql, values)
 
             database.commit()
+
+            category = notification['category']
 
             # FCM 알림 예약
             if category in NotificationEnum.FCM_TOPIC.keys(): # 회의 알림인 경우
@@ -191,25 +202,25 @@ class NotificationByCategoryAPI(Resource):
     @notification.response(400, 'Bad Request', AdminNotificationDTO.response_message)
     @notification.doc(security='apiKey')
     @jwt_required()
-    def delete(self, category):
-        notification_id = request.args['notification_id']
+    def delete(self):
+        id = request.args['id']
 
         # DB 예외 처리
         try:
             database = Database()
 
             # 알림 대상자 정보를 DB에서 삭제
-            sql = f"DELETE FROM notification_member WHERE notification_id = {notification_id};"
+            sql = f"DELETE FROM notification_member WHERE notification_id = {id};"
             database.execute(sql)
 
             # 알림 정보를 DB에서 삭제
-            sql = f"DELETE FROM notification WHERE id = {notification_id};"
+            sql = f"DELETE FROM notification WHERE id = {id};"
             database.execute(sql)
 
             database.commit()
 
             # FCM 알림 예약 취소
-            fcm.remove_message(str(notification_id))
+            fcm.remove_message(str(id))
         except:
             return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!'}, 400
         finally:
