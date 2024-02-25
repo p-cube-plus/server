@@ -60,6 +60,9 @@ app.extensions['memcache_client'] = mc
 # request 마다 실행
 @app.before_request
 def before_request():
+    # 임시 비활성화
+    return
+
     # 유저 App 버전 얻기
     app_version = request.headers.get('app_version')
 
