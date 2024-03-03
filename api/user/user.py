@@ -2,7 +2,7 @@ from flask import Flask, redirect, request, current_app
 from flask_restx import Resource, Api, Namespace
 from database.database import Database
 from utils.dto import UserDTO
-from utils.enum_tool import convert_to_string, convert_to_index, UserEnum, WarningEnum, ProjectEnum
+from utils.enum_tool import UserEnum, WarningEnum, ProjectEnum
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from utils.aes_cipher import AESCipher
 
@@ -36,10 +36,10 @@ class UserProfileAPI(Resource):
             user['name'] = crypt.decrypt(user['name'])
 
             # index를 문자열로 변경
-            user['level'] = convert_to_string(UserEnum.LEVEL, user['level'])
-            user['part_index'] = convert_to_string(UserEnum.PART, user['part_index'])
+            user['level'] = UserEnum.Level(user['level'])
+            user['part_index'] = UserEnum.Part(user['part_index'])
             user['part'] = user.pop('part_index')
-            user['rest_type'] = convert_to_string(UserEnum.REST_TYPE, user['rest_type'])
+            user['rest_type'] = UserEnum.RestType(user['rest_type'])
             
             return user, 200
 
@@ -101,9 +101,8 @@ class UserProjectAPI(Resource):
         else:
             for idx, project in enumerate(project_list):
                 # index를 문자열로 변환
-                project_list[idx]['type'] = convert_to_string(ProjectEnum.TYPE, project['type'])
-                project_list[idx]['status'] = convert_to_string(ProjectEnum.STATUS, project['status'])
-
+                project_list[idx]['type'] = ProjectEnum.Type(project['type'])
+                project_list[idx]['status'] = ProjectEnum.Status(project['status'])
                 # date를 문자열로 변환
                 if project['start_date']:
                     project_list[idx]['start_date'] = project['start_date'].strftime('%Y-%m-%d')

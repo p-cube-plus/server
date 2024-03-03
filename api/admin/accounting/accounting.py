@@ -4,7 +4,7 @@ from database.database import Database
 from datetime import datetime, date
 from utils.dto import AdminAccountingDTO
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from utils.enum_tool import convert_to_string, convert_to_index, AccountingEnum, UserEnum
+from utils.enum_tool import AccountingEnum, UserEnum
 from utils.aes_cipher import AESCipher
 
 
@@ -67,13 +67,8 @@ class MembershipFeeCheckAPI(Resource):
         # 회비 납부 내역의 날짜 및 index 데이터들을 문자열로 변경 
         for idx, user_payment in enumerate(user_payment_list):
             user_payment_list[idx]['date'] = user_payment['date'].strftime('%Y-%m-%d')
-
-            if user_payment_list[idx]['date'] == current_month:
-                user_payment_list[idx]['category'] = convert_to_string(AccountingEnum.PAYMENT_STATE, user_payment['category'])
-            else:
-                user_payment_list[idx]['category'] = convert_to_string(AccountingEnum.PAYMENT_STATE, user_payment['category'])
-
-            user_payment_list[idx]['level'] = convert_to_string(UserEnum.LEVEL, user_payment['level'])
+            user_payment_list[idx]['category'] = AccountingEnum.PaymentState(user_payment['category'])
+            user_payment_list[idx]['level'] = UserEnum.Level(user_payment['level'])
 
         # 월별 회비 납부 내역 만들기
         monthly_payment_list = []
