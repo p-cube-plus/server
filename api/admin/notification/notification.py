@@ -4,7 +4,7 @@ from database.database import Database
 from datetime import datetime, date
 from utils.dto import AdminNotificationDTO
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from utils.enum_tool import convert_to_index, convert_to_string, NotificationEnum
+from utils.enum_tool import NotificationEnum
 from utils.aes_cipher import AESCipher
 from utils import fcm
 
@@ -20,7 +20,7 @@ class NotificationByCategoryAPI(Resource):
     @jwt_required()
     def get(self):
         # Query Parameter 데이터 읽어오기
-        category = convert_to_index(NotificationEnum.CATEGORY, request.args['category'])
+        category = NotificationEnum.Category(request.args['category'])
 
         # DB 예외 처리
         try:
@@ -36,10 +36,10 @@ class NotificationByCategoryAPI(Resource):
                     # date, day, time, category를 문자열로 변경
                     if notification['date']:
                         notification_list[idx]['date'] = notification['date'].strftime('%Y-%m-%d')
-                    notification_list[idx]['day'] = convert_to_string(NotificationEnum.DAY_CATEGORY, notification['day'])
+                    notification_list[idx]['day'] = NotificationEnum.DayCategory(notification['day'])
                     notification_list[idx]['time'] = str(notification['time'])
-                    notification_list[idx]['category'] = convert_to_string(NotificationEnum.CATEGORY, notification['category'])
-                    notification_list[idx]['member_category'] = convert_to_string(NotificationEnum.MEMBER_CATEGORY, notification['member_category'])
+                    notification_list[idx]['category'] = NotificationEnum.Category(notification['category'])
+                    notification_list[idx]['member_category'] = NotificationEnum.MemberCategory(notification['member_category'])
 
                     if notification_list[idx]['member_category'] == '기타 선택':
                         # DB에서 알림 대상자 목록 가져오기
@@ -64,13 +64,15 @@ class NotificationByCategoryAPI(Resource):
         notification = request.get_json()
         
         # category, day를 index로 변환
-        notification['category'] = convert_to_index(NotificationEnum.CATEGORY, notification['category'])
-        notification['member_category'] = convert_to_index(NotificationEnum.MEMBER_CATEGORY, notification['member_category'])
-        notification['day'] = convert_to_index(NotificationEnum.DAY_CATEGORY, notification['day'])
+        notification['category'] = NotificationEnum.Category(notification['category'])
+        notification['member_category'] = NotificationEnum.MemberCategory(notification['member_category'])
+        notification['day'] = NotificationEnum.DayCategory(notification['day'])
         
+        category = notification['category']
+
         # 회의 알림인 경우 메시지 설정
-        if category in NotificationEnum.FCM_TOPIC.keys():
-            notification['message'] = f"{convert_to_string(NotificationEnum.CATEGORY, category)} "\
+        if category in NotificationEnum.FcmTopic:
+            notification['message'] = f"{NotificationEnum.Category(notification['category'])} "\
                 f"{'파트' if category != 3 else ''} 회의가 {notification['schedule']}에 시작됩니다."
 
         # DB 예외 처리
@@ -101,14 +103,12 @@ class NotificationByCategoryAPI(Resource):
 
             database.commit()
 
-            category = notification['category']
-
             # FCM 알림 예약
-            if category in NotificationEnum.FCM_TOPIC.keys(): # 회의 알림인 경우
+            if category in NotificationEnum.FcmTopic: # 회의 알림인 경우
                 # 내용 및 주제 설정
                 title = "회의 알림"
                 body = notification['message']
-                topic = convert_to_string(NotificationEnum.FCM_TOPIC, category)
+                topic = NotificationEnum.FcmTopic(category)
 
                 # 알림 예약
                 fcm.schedule_message(str(id), title, body, notification['time'], date=notification['date'], day=notification['day'], topic=topic)
@@ -133,13 +133,15 @@ class NotificationByCategoryAPI(Resource):
         notification = request.get_json()
 
         # category, day를 index로 변환
-        notification['category'] = convert_to_index(NotificationEnum.CATEGORY, notification['category'])
-        notification['member_category'] = convert_to_index(NotificationEnum.MEMBER_CATEGORY, notification['member_category'])
-        notification['day'] = convert_to_index(NotificationEnum.DAY_CATEGORY, notification['day'])
+        notification['category'] = NotificationEnum.Category(notification['category'])
+        notification['member_category'] = NotificationEnum.MemberCategory(notification['member_category'])
+        notification['day'] = NotificationEnum.DayCategory(notification['day'])
+
+        category = notification['category']
 
         # 회의 알림인 경우 메시지 설정
-        if category in NotificationEnum.FCM_TOPIC.keys():
-            notification['message'] = f"{convert_to_string(NotificationEnum.CATEGORY, category)} "\
+        if category in NotificationEnum.FcmTopic:
+            notification['message'] = f"{NotificationEnum.Category(category)} "\
                 f"{'파트' if category != 3 else ''} 회의가 {notification['schedule']}에 시작됩니다."
 
         # DB 예외 처리
@@ -175,14 +177,12 @@ class NotificationByCategoryAPI(Resource):
 
             database.commit()
 
-            category = notification['category']
-
             # FCM 알림 예약
-            if category in NotificationEnum.FCM_TOPIC.keys(): # 회의 알림인 경우
+            if category in NotificationEnum.FcmTopic: # 회의 알림인 경우
                 # 내용 및 주제 설정
                 title = "회의 알림"
                 body = notification['message']
-                topic = convert_to_string(NotificationEnum.FCM_TOPIC, category)
+                topic = NotificationEnum.FcmTopic(category)
 
                 # 알림 예약
                 fcm.schedule_message(str(notification['id']), title, body, notification['time'], date=notification['date'], day=notification['day'], topic=topic)
@@ -261,7 +261,6 @@ class NotificationPaymentPeriodAPI(Resource):
     @notification.doc(security='apiKey')
     @jwt_required()
     def get(self):
-
         # 금월 및 작년 6월 날짜 문자열로 얻기
         current_month = date(datetime.today().year, datetime.today().month, 1).strftime('%Y-%m-%d')
         start_month = date(datetime.today().year - 1, 6, 1).strftime('%Y-%m-%d')

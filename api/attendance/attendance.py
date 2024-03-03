@@ -4,7 +4,7 @@ from database.database import Database
 from datetime import datetime, date
 from utils.dto import AttendanceDTO
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from utils.enum_tool import convert_to_string, convert_to_index, AttendanceEnum
+from utils.enum_tool import AttendanceEnum
 
 attendance = AttendanceDTO.api
 
@@ -59,8 +59,8 @@ class AttendanceUserAPI(Resource):
         attendance['second_auth_end_time'] = str(attendance['second_auth_end_time'])        
         attendance['first_auth_time'] = str(attendance['first_auth_time'])
         attendance['second_auth_time'] = str(attendance['second_auth_time'])
-        attendance['category'] = convert_to_string(AttendanceEnum.CATEGORY, attendance['category'])
-        attendance['state'] = convert_to_string(AttendanceEnum.USER_ATTENDANCE_STATE, attendance['state'])
+        attendance['category'] = AttendanceEnum.Category(attendance['category'])
+        attendance['state'] = AttendanceEnum.UserAttendanceState(attendance['state'])
 
         return {'attendance': attendance, 'record_list': record_list}, 200
     
@@ -77,7 +77,7 @@ class AttendanceUserAPI(Resource):
         user_attendance = request.get_json()
 
         # 회원 출석 state를 index로 변경
-        user_attendance['state'] = convert_to_index(AttendanceEnum.USER_ATTENDANCE_STATE, user_attendance['state'])
+        user_attendance['state'] = AttendanceEnum.UserAttendanceState(user_attendance['state'])
 
         # DB 예외처리
         try:
