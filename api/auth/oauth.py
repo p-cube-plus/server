@@ -10,7 +10,7 @@ from flask_jwt_extended import (
 from database.database import Database
 import random, sms
 from utils.dto import OAuthDTO
-from utils.enum_tool import NotificationEnum, convert_to_string
+from utils.enum_tool import NotificationEnum
 from utils import fcm
 
 config = configparser.ConfigParser()
@@ -191,7 +191,7 @@ class OauthUserCheckAPI(Resource):
                 database.commit()
 
                 # FCM topic 구독
-                fcm.subscribe([user_info['fcm_token']], convert_to_string(NotificationEnum.FCM_TOPIC, user['part_index']))
+                fcm.subscribe([user_info['fcm_token']], NotificationEnum.FcmTopic(user['part_index']))
                 fcm.subscribe([user_info['fcm_token']], 'global')
         except:
             return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!'}, 400

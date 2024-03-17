@@ -3,7 +3,7 @@ from flask_restx import Resource, Namespace
 from database.database import Database
 from utils.dto import AdminAttendanceDTO
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from utils.enum_tool import convert_to_string, convert_to_index, AttendanceEnum, UserEnum
+from utils.enum_tool import AttendanceEnum, UserEnum
 from utils.aes_cipher import AESCipher
 
 attendance = AdminAttendanceDTO.api
@@ -18,7 +18,7 @@ class AttendanceInfoAPI(Resource):
     @jwt_required()
     def get(self):
         # Query Parameter 데이터 읽어오기
-        category = convert_to_index(AttendanceEnum.CATEGORY, request.args['category'])
+        category = AttendanceEnum.Category(request.args['category'])
         date = request.args['date']
 
         # DB 예외 처리
@@ -54,7 +54,7 @@ class AttendanceInfoAPI(Resource):
         attendance = request.get_json()
 
         # category를 index로 변환
-        attendance['category'] = convert_to_index(AttendanceEnum.CATEGORY, attendance['category'])
+        attendance['category'] = AttendanceEnum.Category(attendance['category'])
 
         # DB 예외 처리
         try:
@@ -82,7 +82,7 @@ class AttendanceInfoAPI(Resource):
         # Body 데이터 읽어오기
         attendance = request.get_json()
 
-        attendance['category'] = convert_to_index(AttendanceEnum.CATEGORY, attendance['category'])
+        attendance['category'] = AttendanceEnum.Category(attendance['category'])
 
         # DB 예외처리
         try:
@@ -164,10 +164,10 @@ class AttendanceUserListAPI(Resource):
         else:
             # index 및 time을 문자열로 변환
             for idx, user in enumerate(user_list):
-                user_list[idx]['part_index'] = convert_to_string(UserEnum.PART, user['part_index'])
+                user_list[idx]['part_index'] = UserEnum.Part(user['part_index'])
                 user_list[idx]['part'] = user.pop('part_index')
-                user_list[idx]['rest_type'] = convert_to_string(UserEnum.REST_TYPE, user['rest_type'])
-                user_list[idx]['state'] = convert_to_string(AttendanceEnum.USER_ATTENDANCE_STATE, user['state'])
+                user_list[idx]['rest_type'] = UserEnum.RestType(user['rest_type'])
+                user_list[idx]['state'] = AttendanceEnum.UserAttendanceState(user['state'])
                 user_list[idx]['first_auth_time'] = str(user['first_auth_time'])
                 user_list[idx]['second_auth_time'] = str(user['second_auth_time'])
 
@@ -200,7 +200,7 @@ class AttendanceUserAPI(Resource):
         # 회원 출석 정보가 존재할 시 처리
         if user_attendance:
             # 회원 출석 state, 출석 인증 시간을 문자열로 변경
-            user_attendance['state'] = convert_to_string(AttendanceEnum.USER_ATTENDANCE_STATE, user_attendance['state'])
+            user_attendance['state'] = AttendanceEnum.UserAttendanceState(user_attendance['state'])
             user_attendance['first_auth_time'] = str(user_attendance['first_auth_time'])
             user_attendance['second_auth_time'] = str(user_attendance['second_auth_time'])
         
@@ -216,7 +216,7 @@ class AttendanceUserAPI(Resource):
         user_attendance = request.get_json()
 
         # 회원 출석 state를 index로 변경
-        user_attendance['state'] = convert_to_index(AttendanceEnum.USER_ATTENDANCE_STATE, user_attendance['state'])
+        user_attendance['state'] = AttendanceEnum.UserAttendanceState(user_attendance['state'])
 
         # DB 예외처리
         try:

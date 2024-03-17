@@ -3,7 +3,7 @@ from flask_restx import Resource, Namespace
 from database.database import Database
 from utils.dto import SeminarDTO
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from utils.enum_tool import convert_to_string, convert_to_index, SeminarEnum
+from utils.enum_tool import SeminarEnum
 
 seminar = SeminarDTO.api
 
@@ -35,7 +35,7 @@ class SeminarUserAPI(Resource):
             for idx, seminar in enumerate(seminar_list):
                 # date 및 category를 문자열로 변경
                 seminar_list[idx]['date'] = seminar['date'].strftime('%Y-%m-%d')
-                seminar_list[idx]['category'] = convert_to_string(SeminarEnum.CATEGORY, seminar['category'])
+                seminar_list[idx]['category'] = SeminarEnum.Category(seminar['category'])
             return seminar_list, 200
         
     # 세미나 정보 추가
@@ -51,7 +51,7 @@ class SeminarUserAPI(Resource):
         seminar = request.get_json()
 
         # category를 index로 변환
-        seminar['category'] = convert_to_index(SeminarEnum.CATEGORY, seminar['category'])
+        seminar['category'] = SeminarEnum.Category(seminar['category'])
 
         # DB 예외 처리
         try:
@@ -82,7 +82,7 @@ class SeminarUserAPI(Resource):
         seminar = request.get_json()
 
         # category를 index로 변환
-        seminar['category'] = convert_to_index(SeminarEnum.CATEGORY, seminar['category'])
+        seminar['category'] = SeminarEnum.Category(seminar['category'])
 
         # DB 예외 처리
         try:
