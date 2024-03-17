@@ -68,6 +68,8 @@ class NotificationByCategoryAPI(Resource):
         notification['member_category'] = convert_to_index(NotificationEnum.MEMBER_CATEGORY, notification['member_category'])
         notification['day'] = convert_to_index(NotificationEnum.DAY_CATEGORY, notification['day'])
         
+        category = notification['category']
+
         # 회의 알림인 경우 메시지 설정
         if category in NotificationEnum.FCM_TOPIC.keys():
             notification['message'] = f"{convert_to_string(NotificationEnum.CATEGORY, category)} "\
@@ -100,8 +102,6 @@ class NotificationByCategoryAPI(Resource):
             database.execute_many(sql, values)
 
             database.commit()
-
-            category = notification['category']
 
             # FCM 알림 예약
             if category in NotificationEnum.FCM_TOPIC.keys(): # 회의 알림인 경우
@@ -136,6 +136,8 @@ class NotificationByCategoryAPI(Resource):
         notification['category'] = convert_to_index(NotificationEnum.CATEGORY, notification['category'])
         notification['member_category'] = convert_to_index(NotificationEnum.MEMBER_CATEGORY, notification['member_category'])
         notification['day'] = convert_to_index(NotificationEnum.DAY_CATEGORY, notification['day'])
+
+        category = notification['category']
 
         # 회의 알림인 경우 메시지 설정
         if category in NotificationEnum.FCM_TOPIC.keys():
@@ -174,8 +176,6 @@ class NotificationByCategoryAPI(Resource):
             database.execute_many(sql, values)
 
             database.commit()
-
-            category = notification['category']
 
             # FCM 알림 예약
             if category in NotificationEnum.FCM_TOPIC.keys(): # 회의 알림인 경우
