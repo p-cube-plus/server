@@ -36,6 +36,7 @@ class NotificationByCategoryAPI(Resource):
                     # date, day, time, category를 문자열로 변경
                     if notification['date']:
                         notification_list[idx]['date'] = notification['date'].strftime('%Y-%m-%d')
+                    notification_list[idx]['schedule'] = notification['schedule'].strftime('%Y-%m-%dT%H:%M:%S')
                     notification_list[idx]['day'] = convert_to_string(NotificationEnum.DAY_CATEGORY, notification['day'])
                     notification_list[idx]['time'] = str(notification['time'])
                     notification_list[idx]['category'] = convert_to_string(NotificationEnum.CATEGORY, notification['category'])
