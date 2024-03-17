@@ -60,7 +60,7 @@ class AdminNotificationDTO:
         'day': nullable(fields.String)(description='요일'),
         'time': fields.String(description='시간'),
         'location': nullable(fields.String)(description='장소'),
-        'schedule': nullable(fields.String)(description='일정'),
+        'schedule': fields.String(description='일정', example="2024-04-20T18:30:00"),
         'message': nullable(fields.String)(desciption='메시지 기타 알림인 경우 설정)'),
         'memo': nullable(fields.String)(description='메모'),
         'member_list': fields.List(fields.String, description="알림 대상자 목록('알림 대상자 종류가 '기타 선택'이 아닌 경우 빈 리스트)")
@@ -73,7 +73,7 @@ class AdminNotificationDTO:
         'day': nullable(fields.String)(description='요일'),
         'time': fields.String(description='시간'),
         'location': nullable(fields.String)(description='장소'),
-        'schedule': nullable(fields.String)(description='일정'),
+        'schedule': fields.String(description='일정', example="2024-04-20T18:30:00"),
         'message': nullable(fields.String)(desciption='메시지 기타 알림인 경우 설정)'),
         'memo': nullable(fields.String)(description='메모'),
         'member_list': fields.List(fields.String, description="알림 대상자 목록('알림 대상자 종류가 '기타 선택'이 아닌 경우 빈 리스트)")
@@ -504,7 +504,7 @@ class NotificationDTO:
         'day': nullable(fields.String)(description='요일'),
         'time': fields.String(description='시간'),
         'location': nullable(fields.String)(description='장소'),
-        'schedule': nullable(fields.String)(description='일정'),
+        'schedule': fields.String(description='일정', example="2024-04-20T18:30:00"),
         'message': nullable(fields.String)(desciption='메시지'),
         'is_read': fields.Boolean(description='읽음 여부')
     })
