@@ -32,6 +32,7 @@ class NotificationAPI(Resource):
 
         for idx, notification in enumerate(notifications):
             notifications[idx]['date'] = notification['date'].strftime('%Y-%m-%d')
+            notifications[idx]['schedule'] = notification['schedule'].strftime('%Y-%m-%dT%H:%M:%S')
             notifications[idx]['time'] = str(notification['time'])
             notifications[idx]['is_read'] = bool(notification['is_read'])
 

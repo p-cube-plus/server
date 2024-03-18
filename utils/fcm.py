@@ -25,6 +25,7 @@ def load_messages():
             # 날짜 및 시간을 문자열로 변경
             if notification['date']:
                 notification_list[idx]['date'] = notification['date'].strftime('%Y-%m-%d')
+            notification_list[idx]['schedule'] = notification['schedule'].strftime('%Y-%m-%dT%H:%M:%S')
             notification_list[idx]['time'] = str(notification['time'])
 
             # 알림 category
@@ -61,7 +62,7 @@ def update_user_notification(id, targets):
     # DB 예외 처리
     try:
         database = Database()
-        sql = f"UPDATE notification_member SET is_sent = 1 WHERE id = {id} and user_id = %s;"
+        sql = f"UPDATE notification_member SET is_sent = 1 WHERE notification_id = {id} and user_id = %s;"
         values = [(target,) for target in targets]
         database.execute_many(sql, values)
         database.commit()

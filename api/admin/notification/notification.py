@@ -36,6 +36,7 @@ class NotificationByCategoryAPI(Resource):
                     # date, day, time, category를 문자열로 변경
                     if notification['date']:
                         notification_list[idx]['date'] = notification['date'].strftime('%Y-%m-%d')
+                    notification_list[idx]['schedule'] = notification['schedule'].strftime('%Y-%m-%dT%H:%M:%S')
                     notification_list[idx]['day'] = convert_to_string(NotificationEnum.DAY_CATEGORY, notification['day'])
                     notification_list[idx]['time'] = str(notification['time'])
                     notification_list[idx]['category'] = convert_to_string(NotificationEnum.CATEGORY, notification['category'])
@@ -111,7 +112,7 @@ class NotificationByCategoryAPI(Resource):
                 topic = convert_to_string(NotificationEnum.FCM_TOPIC, category)
 
                 # 알림 예약
-                fcm.schedule_message(str(id), title, body, notification['time'], date=notification['date'], day=notification['day'], topic=topic)
+                fcm.schedule_message(str(id), title, body, notification['time'], date=notification['date'], day=notification['day'], topic=topic, targets=notification['member_list'])
             else: # 청소 및 기타 알림인 경우
                 # 추후 구현 예정
                 pass
@@ -185,7 +186,7 @@ class NotificationByCategoryAPI(Resource):
                 topic = convert_to_string(NotificationEnum.FCM_TOPIC, category)
 
                 # 알림 예약
-                fcm.schedule_message(str(notification['id']), title, body, notification['time'], date=notification['date'], day=notification['day'], topic=topic)
+                fcm.schedule_message(str(notification['id']), title, body, notification['time'], date=notification['date'], day=notification['day'], topic=topic, targets=notification['member_list'])
             else: # 청소 및 기타 알림인 경우
                 # 추후 구현 예정
                 pass
