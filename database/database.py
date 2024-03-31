@@ -23,6 +23,7 @@ class Database:
             Database._pool.init()
 
         self.conn = Database._pool.get_conn()
+        self.conn.ping(reconnect=True)
         self.conn.commit()
         self.cursor = self.conn.cursor()
 
