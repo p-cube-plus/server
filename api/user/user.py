@@ -124,6 +124,8 @@ class UserListAPI(Resource):
     @user.expect(UserDTO.query_user_params, validate=True)
     @user.response(200, 'OK', [UserDTO.model_user_profile])
     @user.response(400, 'Bad Request', UserDTO.response_message)
+    @user.doc(security='apiKey')
+    @jwt_required()
     def get(self):
         # 쿼리 파라미터 얻기
         part_index = request.args.get('part_index', None)
