@@ -118,3 +118,49 @@ class UserProjectAPI(Resource):
                 project_list[idx]['is_able_inquiry'] = True if project['is_able_inquiry'] else False
 
             return project_list, 200
+        
+@user.route('/list')
+class UserListAPI(Resource):
+    @user.expect(UserDTO.query_user_params, validate=True)
+    @user.response(200, 'OK', [UserDTO.model_user_profile])
+    @user.response(400, 'Bad Request', UserDTO.response_message)
+    def get(self):
+        # 쿼리 파라미터 얻기
+        part_index = request.args.get('part_index', None)
+        level = request.args.get('level', None)
+        rest_type = request.args.get('rest_type', None)
+
+        # 쿼리 파라미터에 맞게 SQL문 구성
+        sql = "SELECT id, name, level, grade, part_index, rest_type, profile_image FROM users WHERE 1=1"
+        if part_index:
+            sql += f" AND part_index = {convert_to_index(UserEnum.PART, part_index)}"
+        if level:
+            sql += f" AND level = {convert_to_index(UserEnum.LEVEL, level)}"
+        if rest_type:
+            sql += f" AND rest_type = {convert_to_index(UserEnum.REST_TYPE, rest_type)}"
+
+        # DB 예외처리
+        try:
+            # 회원 목록 얻기
+            database = Database()
+            user_list = database.execute_all(sql)
+        except:
+            return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!'}, 400
+        finally:
+            database.close()
+
+        if not user_list:  # 회원이 없을 때 처리
+            return [], 200
+        else:
+            crypt = AESCipher()
+            for idx, user in enumerate(user_list):
+                # 회원 이름 복호화
+                user_list[idx]['name'] = crypt.decrypt(user['name'])
+
+                # index를 문자열로 변경
+                user_list[idx]['level'] = convert_to_string(UserEnum.LEVEL, user['level'])
+                user_list[idx]['part_index'] = convert_to_string(UserEnum.PART, user['part_index'])
+                user_list[idx]['part'] = user_list[idx].pop('part_index')
+                user_list[idx]['rest_type'] = convert_to_string(UserEnum.REST_TYPE, user['rest_type'])
+
+            return user_list, 200
