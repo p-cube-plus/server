@@ -26,6 +26,17 @@ class AttendanceDTO:
         'state': fields.String(description='출석 여부')
     })
 
+    model_record_with_week_of_month = api.model('model_record_with_week_of_month', {
+        'date': fields.String(description='출석 일자', example='2024-03-31'),
+        'week_of_month': fields.Integer(description='n주차', example=4),
+        'state': fields.String(description='출석 여부'),
+    })
+
+    model_record_list_by_category = api.model('model_record_list_by_category', {
+        'category': fields.String(description='출석 종류', example='정기'),
+        'record_list': fields.List(fields.Nested(model_record_with_week_of_month))
+    })
+
     model_user_attendance = api.model('model_user_attendance', {
         'state': nullable(fields.String)(description='출석 상태', enum=['출석', '지각', '불참', None]),
         'first_auth_time': nullable(fields.String)(description='1차 인증 시간'),
