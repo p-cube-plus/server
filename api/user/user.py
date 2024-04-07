@@ -134,11 +134,11 @@ class UserListAPI(Resource):
         # 쿼리 파라미터에 맞게 SQL문 구성
         sql = "SELECT id, name, level, grade, part_index, rest_type, profile_image FROM users WHERE 1=1"
         if part_index:
-            sql += f" AND part_index = {convert_to_index(UserEnum.PART, part_index)}"
+            sql += f" AND part_index = {UserEnum.Part(part_index)}"
         if level:
-            sql += f" AND level = {convert_to_index(UserEnum.LEVEL, level)}"
+            sql += f" AND level = {UserEnum.Level(level)}"
         if rest_type:
-            sql += f" AND rest_type = {convert_to_index(UserEnum.REST_TYPE, rest_type)}"
+            sql += f" AND rest_type = {UserEnum.RestType(rest_type)}"
 
         # DB 예외처리
         try:
@@ -159,9 +159,9 @@ class UserListAPI(Resource):
                 user_list[idx]['name'] = crypt.decrypt(user['name'])
 
                 # index를 문자열로 변경
-                user_list[idx]['level'] = convert_to_string(UserEnum.LEVEL, user['level'])
-                user_list[idx]['part_index'] = convert_to_string(UserEnum.PART, user['part_index'])
+                user_list[idx]['level'] = UserEnum.Level(user['level'])
+                user_list[idx]['part_index'] = UserEnum.Part(user['part_index'])
                 user_list[idx]['part'] = user_list[idx].pop('part_index')
-                user_list[idx]['rest_type'] = convert_to_string(UserEnum.REST_TYPE, user['rest_type'])
+                user_list[idx]['rest_type'] = UserEnum.RestType(user['rest_type'])
 
             return user_list, 200
