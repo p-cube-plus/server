@@ -423,7 +423,7 @@ class UserDTO:
 
 
     query_user_params = api.parser().add_argument(
-        'part_index', type=str, help='소속 파트'
+        'part', type=str, help='소속 파트'
     ).add_argument(
         'level', type=str, help='회원 종류(탈퇴자, 정회원, 수습회원, 명예회원, 수습회원(휴학), 졸업생)'
     ).add_argument(
