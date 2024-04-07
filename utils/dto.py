@@ -532,3 +532,45 @@ class NotificationDTO:
     response_notification_message = api.model('response_notification_message', {
         'message': fields.String(description='결과 메시지', example="결과 메시지")
     })
+
+class AdminRoleDTO:
+    api = Namespace('role', description='임원진 직책')
+
+    model_admin_role = api.model('model_admin_role', {
+        'id': fields.Integer(description='임원진 직책 ID', example=1),
+        'user_id': fields.String(description='회원 ID'),
+        'role': fields.String(description='임원진 직책 종류', example='프로그래밍 파트장'),
+        'start_date': fields.String(description='취임 날짜', example='2024-03-02'),
+        'end_date': fields.String(description='퇴임 날짜', example='2025-03-01'),
+    })
+
+    model_admin_role_without_id = api.model('model_admin_role_without_id', {
+        'user_id': fields.String(description='회원 ID'),
+        'role': fields.String(description='임원진 직책 종류', example='프로그래밍 파트장'),
+        'start_date': fields.String(description='취임 날짜', example='2024-03-02'),
+        'end_date': fields.String(description='퇴임 날짜', example='2025-03-01'),
+    })
+
+    model_admin_role_user_record = api.model('model_admin_role_user_record', {
+        'id': fields.Integer(description='임원진 직책 ID', example=1),
+        'role': fields.String(description='임원진 직책 종류', example='프로그래밍 파트장'),
+        'start_date': fields.String(description='취임 날짜', example='2024-03-02'),
+        'end_date': fields.String(description='퇴임 날짜', example='2025-03-01'),        
+    })
+
+    model_admin_role_user = api.model('model_admin_role_user', {
+        'current_role': nullable(fields.String)(description='현재 직책', example='프로그래밍 파트장 (nullable)'),
+        'record_list': fields.List(fields.Nested(model_admin_role_user_record))
+    })
+
+    query_admin_id = api.parser().add_argument(
+        'id', type=int, help='임원진 직책 ID'
+    )
+
+    query_user_id = api.parser().add_argument(
+        'user_id', type=str, help='회원 ID'
+    )
+
+    response_admin_role_message = api.model('response_admin_role_message', {
+        'message': fields.String(description='결과 메시지', example="결과 메시지")
+    })
