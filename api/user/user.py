@@ -2,7 +2,7 @@ from flask import Flask, redirect, request, current_app
 from flask_restx import Resource, Api, Namespace
 from database.database import Database
 from utils.dto import UserDTO
-from utils.enum_tool import convert_to_string, convert_to_index, UserEnum, WarningEnum, ProjectEnum
+from utils.enum_tool import UserEnum, WarningEnum, ProjectEnum
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from utils.aes_cipher import AESCipher
 
@@ -36,10 +36,10 @@ class UserProfileAPI(Resource):
             user['name'] = crypt.decrypt(user['name'])
 
             # index를 문자열로 변경
-            user['level'] = convert_to_string(UserEnum.LEVEL, user['level'])
-            user['part_index'] = convert_to_string(UserEnum.PART, user['part_index'])
+            user['level'] = UserEnum.Level(user['level'])
+            user['part_index'] = UserEnum.Part(user['part_index'])
             user['part'] = user.pop('part_index')
-            user['rest_type'] = convert_to_string(UserEnum.REST_TYPE, user['rest_type'])
+            user['rest_type'] = UserEnum.RestType(user['rest_type'])
             
             return user, 200
 
@@ -101,9 +101,8 @@ class UserProjectAPI(Resource):
         else:
             for idx, project in enumerate(project_list):
                 # index를 문자열로 변환
-                project_list[idx]['type'] = convert_to_string(ProjectEnum.TYPE, project['type'])
-                project_list[idx]['status'] = convert_to_string(ProjectEnum.STATUS, project['status'])
-
+                project_list[idx]['type'] = ProjectEnum.Type(project['type'])
+                project_list[idx]['status'] = ProjectEnum.Status(project['status'])
                 # date를 문자열로 변환
                 if project['start_date']:
                     project_list[idx]['start_date'] = project['start_date'].strftime('%Y-%m-%d')
@@ -135,11 +134,11 @@ class UserListAPI(Resource):
         # 쿼리 파라미터에 맞게 SQL문 구성
         sql = "SELECT id, name, level, grade, part_index, rest_type, profile_image FROM users WHERE 1=1"
         if part_index:
-            sql += f" AND part_index = {convert_to_index(UserEnum.PART, part_index)}"
+            sql += f" AND part_index = {UserEnum.Part(part_index)}"
         if level:
-            sql += f" AND level = {convert_to_index(UserEnum.LEVEL, level)}"
+            sql += f" AND level = {UserEnum.Level(level)}"
         if rest_type:
-            sql += f" AND rest_type = {convert_to_index(UserEnum.REST_TYPE, rest_type)}"
+            sql += f" AND rest_type = {UserEnum.RestType(rest_type)}"
 
         # DB 예외처리
         try:
@@ -160,9 +159,9 @@ class UserListAPI(Resource):
                 user_list[idx]['name'] = crypt.decrypt(user['name'])
 
                 # index를 문자열로 변경
-                user_list[idx]['level'] = convert_to_string(UserEnum.LEVEL, user['level'])
-                user_list[idx]['part_index'] = convert_to_string(UserEnum.PART, user['part_index'])
+                user_list[idx]['level'] = UserEnum.Level(user['level'])
+                user_list[idx]['part_index'] = UserEnum.Part(user['part_index'])
                 user_list[idx]['part'] = user_list[idx].pop('part_index')
-                user_list[idx]['rest_type'] = convert_to_string(UserEnum.REST_TYPE, user['rest_type'])
+                user_list[idx]['rest_type'] = UserEnum.RestType(user['rest_type'])
 
             return user_list, 200

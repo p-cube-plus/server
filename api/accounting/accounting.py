@@ -4,7 +4,7 @@ from database.database import Database
 from datetime import datetime, date
 from utils.dto import AccountingDTO
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from utils.enum_tool import convert_to_string, convert_to_index, AccountingEnum
+from utils.enum_tool import AccountingEnum
 
 accounting = AccountingDTO.api
 
@@ -66,7 +66,7 @@ class AccountingUserAPI(Resource):
             for idx, monthly_payment in enumerate(monthly_payment_list):
                 # date 및 category를 문자열로 변환
                 monthly_payment_list[idx]['date'] = monthly_payment['date'].strftime('%Y-%m-%d')
-                monthly_payment_list[idx]['category'] = convert_to_string(AccountingEnum.PAYMENT_STATE, monthly_payment['category'])
+                monthly_payment_list[idx]['category'] = AccountingEnum.PaymentState(monthly_payment['category'])
 
             return payment_data, 200
     
@@ -101,5 +101,5 @@ class AccountingListAPI(Resource):
             for idx, accounting in enumerate(accounting_list):
                 # date, payment_method를 문자열로 변환
                 accounting_list[idx]['date'] = accounting['date'].strftime('%Y-%m-%d')
-                accounting_list[idx]['payment_method'] = convert_to_string(AccountingEnum.PAYMENT_METHOD, accounting['payment_method'])
+                accounting_list[idx]['payment_method'] = AccountingEnum.PaymentMethod(accounting['payment_method'])
             return result_data, 200

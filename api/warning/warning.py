@@ -3,7 +3,7 @@ from flask_restx import Resource, Namespace
 from database.database import Database
 from utils.dto import WarningDTO
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from utils.enum_tool import convert_to_string, convert_to_index, WarningEnum
+from utils.enum_tool import WarningEnum
 
 warning = WarningDTO.api
 
@@ -51,7 +51,7 @@ class WarningUserAPI(Resource):
                     total_warning = max(total_warning, 0)
 
                 # 경고 부여, 차감에 따라 원소 분리
-                if warning['category'] >= convert_to_index(WarningEnum.CATEGORY, '주의 부여'):
+                if warning['category'] >= WarningEnum.Category('주의 부여'):
                     add_list.append(warning)
                     total_add_warning += warning['category']
                 else:
@@ -61,7 +61,7 @@ class WarningUserAPI(Resource):
                         else total_add_warning - total_remove_warning
 
             return {
-                'warning_category': WarningEnum.CATEGORY,
+                'warning_category': {-2: '경고 차감', -1: '주의 차감', 1: '주의 부여', 2: '경고 부여', 0: '경고 초기화'},
                 'warning_add_list': add_list,
                 'warning_remove_list': remove_list,
                 'total_warning': total_warning / 2.0,

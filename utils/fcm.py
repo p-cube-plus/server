@@ -3,7 +3,7 @@ import firebase_admin
 from firebase_admin import credentials, messaging
 from datetime import datetime
 from database.database import Database
-from utils.enum_tool import convert_to_index, convert_to_string, NotificationEnum
+from utils.enum_tool import NotificationEnum
 
 scheduler = BackgroundScheduler()
 scheduler.start()
@@ -41,11 +41,11 @@ def load_messages():
                 notification['member_list'] = [user['id'] for user in database.execute_all(sql)]
 
             # FCM 알림 예약
-            if category in NotificationEnum.FCM_TOPIC.keys(): # 회의 알림인 경우
+            if category in NotificationEnum.FcmTopic: # 회의 알림인 경우
                 # 내용 및 주제 설정
                 title = "회의 알림"
                 body = notification['message']
-                topic = convert_to_string(NotificationEnum.FCM_TOPIC, category)
+                topic = NotificationEnum.FcmTopic(category)
 
                 # 알림 예약
                 schedule_message(str(notification['id']), title, body, notification['time'], date=notification['date'], day=notification['day'], topic=topic, targets=notification['member_list'])
