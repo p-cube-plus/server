@@ -128,7 +128,7 @@ class UserListAPI(Resource):
     @jwt_required()
     def get(self):
         # 쿼리 파라미터 얻기
-        part_index = request.args.get('part_index', None)
+        part_index = request.args.get('part', None)
         level = request.args.get('level', None)
         rest_type = request.args.get('rest_type', None)
 
