@@ -162,3 +162,11 @@ class ProjectEnum:
         COMPLETED = EnumData(0, '완료')
         IN_PROGRESS = EnumData(1, '진행 중')
         NOT_STARTED = EnumData(2, '시작 전')
+
+class AdminEnum:
+    class Role(EnumSet):
+        PRESIDENT = EnumData(0, '회장')
+        VICE_PRESIDENT = EnumData(1, '부회장')
+        DESIGN_PART_LEADER = EnumData(2, '디자인 파트장')
+        ART_PART_LEADER = EnumData(3, '아트 파트장')
+        PROGRAMMING_PART_LEADER = EnumData(4, '프로그래밍 파트장')
