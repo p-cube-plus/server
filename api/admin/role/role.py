@@ -10,7 +10,6 @@ role = AdminRoleDTO.api
 
 @role.route('/list')
 class AdminRoleListAPI(Resource):   
-
     # 임원진 직책 정보 목록 조회
     @role.response(200, 'OK', [AdminRoleDTO.model_admin_role])
     @role.response(400, 'Bad Request', AdminRoleDTO.response_admin_role_message)
@@ -36,11 +35,9 @@ class AdminRoleListAPI(Resource):
                 admin_list[idx]['end_date'] = admin['end_date'].strftime('%Y-%m-%d')
                 admin_list[idx]['role'] = AdminEnum.Role(admin['role'])
             return admin_list, 200
-        
-    
+
 @role.route('')
 class AdminRoleAPI(Resource):
-
     # 임원진 직책 정보 조회
     @role.expect(AdminRoleDTO.query_admin_id, validate=True)
     @role.response(200, 'OK', AdminRoleDTO.model_admin_role)
@@ -153,7 +150,6 @@ class AdminRoleAPI(Resource):
     
 @role.route('/user')
 class AdminRoleCheckAPI(Resource):
-
     # 회원의 임원진 정보 조회
     @role.expect(AdminRoleDTO.query_user_id, validate=True)
     @role.response(200, 'OK', AdminRoleDTO.model_admin_role_user)
@@ -195,7 +191,6 @@ class AdminRoleCheckAPI(Resource):
 
 @role.route('/api-access-level')
 class AdminAPIAccessLevelAPI(Resource):
-
     @role.doc(security='apiKey')
     @jwt_required()
     def get(self):
