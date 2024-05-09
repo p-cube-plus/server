@@ -7,6 +7,7 @@ from flask_restx import Resource, Namespace
 from flask import request, current_app
 from utils.dto import AuthDTO
 import time
+from utils.api_access_level_tool import api_access_level
 
 auth = AuthDTO.api
 
@@ -16,7 +17,7 @@ class TokenAPI(Resource):
     def __init__(self, api=None, *args, **kwargs):
         super().__init__(api, args, kwargs)
 
-    @jwt_required(refresh=True)
+    @api_access_level(1, refresh=True)
     @auth.doc(security='apiKey')
     def get(self):
         # refresh token으로 갱신
@@ -29,6 +30,7 @@ class TokenAPI(Resource):
 @auth.route('/token/test')
 class TokenTestAPI(Resource):
     @auth.expect(AuthDTO.query_auth_user_id, validate=True)
+    @api_access_level(0)
     def get(self):
         user_id = request.args['user_id']
         access_token = create_access_token(identity=user_id)
@@ -41,7 +43,7 @@ class LogoutAPI(Resource):
     # 로그아웃 기능
     @auth.response(200, 'OK', AuthDTO.response_logout_message)
     @auth.doc(security='apiKey')
-    @jwt_required(verify_type=False)
+    @api_access_level(1, verify_type=False)
     def delete(self):
         # jwt 얻어오기
         token = get_jwt()

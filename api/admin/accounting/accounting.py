@@ -6,6 +6,7 @@ from utils.dto import AdminAccountingDTO
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from utils.enum_tool import AccountingEnum, UserEnum
 from utils.aes_cipher import AESCipher
+from utils.api_access_level_tool import api_access_level
 
 
 accounting = AdminAccountingDTO.api
@@ -26,7 +27,7 @@ class MembershipFeeCheckAPI(Resource):
     @accounting.response(200, 'OK', [AdminAccountingDTO.model_monthly_payment])
     @accounting.response(400, 'Bad Request', AdminAccountingDTO.response_message)
     @accounting.doc(security='apiKey')
-    @jwt_required()
+    @api_access_level(2)
     def get(self):
         # 금월 및 작년 6월 날짜 문자열로 얻기
         current_month = get_current_month()
@@ -98,7 +99,7 @@ class MembershipFeePeriodAPI(Resource):
     @accounting.response(200, 'OK', [AdminAccountingDTO.model_payment_period])
     @accounting.response(400, 'Bad Request', AdminAccountingDTO.response_message)
     @accounting.doc(security='apiKey')
-    @jwt_required()
+    @api_access_level(2)
     def get(self):
         # 금월 및 작년 6월 날짜 문자열로 얻기
         current_month = get_current_month()
@@ -133,7 +134,7 @@ class MembershipFeePeriodAPI(Resource):
     @accounting.response(201, 'Created', AdminAccountingDTO.response_message)
     @accounting.response(400, 'Bad Request', AdminAccountingDTO.response_message)
     @accounting.doc(security='apiKey')
-    @jwt_required()
+    @api_access_level(2)
     def post(self):
         # Body 데이터 읽어오기
         payment_period = request.get_json()
@@ -158,7 +159,7 @@ class MembershipFeePeriodAPI(Resource):
     @accounting.response(200, 'OK', AdminAccountingDTO.response_message)
     @accounting.response(400, 'Bad Request', AdminAccountingDTO.response_message)
     @accounting.doc(security='apiKey')
-    @jwt_required()
+    @api_access_level(2)
     def put(self):
         # Body 데이터 읽어오기
         payment_period = request.get_json()
@@ -184,7 +185,7 @@ class MembershipFeePeriodAPI(Resource):
     @accounting.response(200, 'OK', AdminAccountingDTO.response_message)
     @accounting.response(400, 'Bad Request', AdminAccountingDTO.response_message)
     @accounting.doc(security='apiKey')
-    @jwt_required()
+    @api_access_level(2)
     def delete(self):
         # Query parameter 읽어오기
         payment_date = request.args['date']

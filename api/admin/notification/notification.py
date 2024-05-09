@@ -7,6 +7,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from utils.enum_tool import NotificationEnum
 from utils.aes_cipher import AESCipher
 from utils import fcm
+from utils.api_access_level_tool import api_access_level
 
 notification = AdminNotificationDTO.api
 
@@ -17,7 +18,7 @@ class NotificationByCategoryAPI(Resource):
     @notification.response(200, 'OK', [AdminNotificationDTO.model_notification])
     @notification.response(400, 'Bad Request', AdminNotificationDTO.response_message)
     @notification.doc(security='apiKey')
-    @jwt_required()
+    @api_access_level(2)
     def get(self):
         # Query Parameter 데이터 읽어오기
         category = NotificationEnum.Category(request.args['category'])
@@ -59,7 +60,7 @@ class NotificationByCategoryAPI(Resource):
     @notification.response(200, 'OK', AdminNotificationDTO.response_message)
     @notification.response(400, 'Bad Request', AdminNotificationDTO.response_message)
     @notification.doc(security='apiKey')
-    @jwt_required()
+    @api_access_level(2)
     def post(self):
         # Body 데이터 읽어오기
         notification = request.get_json()
@@ -128,7 +129,7 @@ class NotificationByCategoryAPI(Resource):
     @notification.response(200, 'OK', AdminNotificationDTO.response_message)
     @notification.response(400, 'Bad Request', AdminNotificationDTO.response_message)
     @notification.doc(security='apiKey')
-    @jwt_required()
+    @api_access_level(2)
     def put(self):
         # Body 데이터 읽어오기
         notification = request.get_json()
@@ -204,7 +205,7 @@ class NotificationByCategoryAPI(Resource):
     @notification.response(200, 'OK', AdminNotificationDTO.response_message)
     @notification.response(400, 'Bad Request', AdminNotificationDTO.response_message)
     @notification.doc(security='apiKey')
-    @jwt_required()
+    @api_access_level(2)
     def delete(self):
         id = request.args['id']
 
@@ -237,7 +238,7 @@ class NotificationUserListAPI(Resource):
     @notification.response(200, 'OK', [AdminNotificationDTO.model_admin_notification_user])
     @notification.response(400, 'Bad Request', AdminNotificationDTO.response_message)
     @notification.doc(security='apiKey')
-    @jwt_required()
+    @api_access_level(2)
     def get(self):
         # DB 예외 처리
         try:
@@ -262,7 +263,7 @@ class NotificationPaymentPeriodAPI(Resource):
     @notification.response(200, 'OK', [AdminNotificationDTO.model_admin_notification_payment_period])
     @notification.response(400, 'Bad Request', AdminNotificationDTO.response_message)
     @notification.doc(security='apiKey')
-    @jwt_required()
+    @api_access_level(2)
     def get(self):
         # 금월 및 작년 6월 날짜 문자열로 얻기
         current_month = date(datetime.today().year, datetime.today().month, 1).strftime('%Y-%m-%d')

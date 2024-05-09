@@ -3,6 +3,7 @@ from flask_restx import Resource, Namespace
 from database.database import Database
 from utils.dto import NotificationDTO
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from utils.api_access_level_tool import api_access_level
 
 notification = NotificationDTO.api
 
@@ -13,7 +14,7 @@ class NotificationAPI(Resource):
     @notification.response(200, 'OK', [NotificationDTO.model_user_notification])
     @notification.response(400, 'Bad Request', NotificationDTO.response_notification_message)
     @notification.doc(security='apiKey')
-    @jwt_required()
+    @api_access_level(1)
     def get(self):
         user_id = get_jwt_identity()
 
@@ -43,7 +44,7 @@ class NotificationAPI(Resource):
     @notification.response(200, 'OK', NotificationDTO.response_notification_message)
     @notification.response(400, 'Bad Request', NotificationDTO.response_notification_message)
     @notification.doc(security='apiKey')
-    @jwt_required()
+    @api_access_level(1)
     def put(self):
         notification_status = request.get_json()
         
@@ -65,7 +66,7 @@ class NotificationAPI(Resource):
     @notification.response(200, 'OK', NotificationDTO.response_notification_message)
     @notification.response(400, 'Bad Request', NotificationDTO.response_notification_message)
     @notification.doc(security='apiKey')
-    @jwt_required()
+    @api_access_level(1)
     def delete(self):
         notification_id = request.get_json()['id']
 

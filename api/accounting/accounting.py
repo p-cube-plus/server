@@ -5,6 +5,7 @@ from datetime import datetime, date
 from utils.dto import AccountingDTO
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from utils.enum_tool import AccountingEnum
+from utils.api_access_level_tool import api_access_level
 
 accounting = AccountingDTO.api
 
@@ -14,7 +15,7 @@ class AccountingUserAPI(Resource):
     @accounting.response(200, 'OK', AccountingDTO.model_payment_info)
     @accounting.response(400, 'Bad Request', AccountingDTO.accounting_response_message)
     @accounting.doc(security='apiKey')
-    @jwt_required()
+    @api_access_level(1)
     def get(self):
         user_id = get_jwt_identity()
 
@@ -76,7 +77,7 @@ class AccountingListAPI(Resource):
     @accounting.response(200, 'OK', AccountingDTO.model_accounting_info)
     @accounting.response(400, 'Bad Request', AccountingDTO.accounting_response_message)
     @accounting.doc(security='apiKey')
-    @jwt_required()
+    @api_access_level(1)
     def get(self):
         # DB 예외처리
         try:

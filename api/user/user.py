@@ -5,6 +5,7 @@ from utils.dto import UserDTO
 from utils.enum_tool import UserEnum, WarningEnum, ProjectEnum
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from utils.aes_cipher import AESCipher
+from utils.api_access_level_tool import api_access_level
 
 user = UserDTO.api
 
@@ -13,7 +14,7 @@ class UserProfileAPI(Resource):
     @user.response(200, 'OK', UserDTO.model_user_profile)
     @user.response(400, 'Bad Request', UserDTO.response_message)
     @user.doc(security='apiKey')
-    @jwt_required()
+    @api_access_level(1)
     def get(self):
         user_id = get_jwt_identity()
 
@@ -48,7 +49,7 @@ class UserWarningAPI(Resource):
     @user.response(200, 'OK', UserDTO.model_user_warning)
     @user.response(400, 'Bad Request', UserDTO.response_message)
     @user.doc(security='apiKey')
-    @jwt_required()
+    @api_access_level(1)
     def get(self):
         user_id = get_jwt_identity()
 
@@ -80,7 +81,7 @@ class UserProjectAPI(Resource):
     @user.response(200, 'OK', [UserDTO.model_user_project])
     @user.response(400, 'Bad Request', UserDTO.response_message)
     @user.doc(security='apiKey')
-    @jwt_required()
+    @api_access_level(1)
     def get(self):
         user_id = get_jwt_identity()
 
@@ -124,7 +125,7 @@ class UserListAPI(Resource):
     @user.response(200, 'OK', [UserDTO.model_user_profile])
     @user.response(400, 'Bad Request', UserDTO.response_message)
     @user.doc(security='apiKey')
-    @jwt_required()
+    @api_access_level(1)
     def get(self):
         # 쿼리 파라미터 얻기
         part_index = request.args.get('part', None)

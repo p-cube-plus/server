@@ -4,6 +4,7 @@ from database.database import Database
 from utils.dto import WarningDTO
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from utils.enum_tool import WarningEnum
+from utils.api_access_level_tool import api_access_level
 
 warning = WarningDTO.api
 
@@ -12,7 +13,7 @@ class WarningUserAPI(Resource):
     # 회원의 경고 목록 얻기
     @warning.response(200, 'OK', WarningDTO.model_warning_list_with_total)
     @warning.doc(security='apiKey')
-    @jwt_required()
+    @api_access_level(1)
     def get(self):
         user_id = get_jwt_identity()
 
