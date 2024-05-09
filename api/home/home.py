@@ -5,6 +5,7 @@ from database.database import Database
 from utils.dto import HomeDTO
 
 from datetime import datetime, timedelta
+from utils.api_access_level_tool import api_access_level
 
 home = HomeDTO.api
 
@@ -14,7 +15,7 @@ home = HomeDTO.api
 class HomeAttendanceAPI(Resource):
     # 예정된 회의 정보 얻기
     @home.doc(security='apiKey')
-    @jwt_required()
+    @api_access_level(1)
     def get(self):
         database = Database()
 
@@ -42,7 +43,7 @@ class HomeAttendanceAPI(Resource):
 class HomeScheduleAPI(Resource):
     # 예정된 일정 목록 얻기
     @home.doc(security='apiKey')
-    @jwt_required()
+    @api_access_level(1)
     def get(self):
         database = Database()
 
@@ -76,7 +77,7 @@ class HomeScheduleAPI(Resource):
 class HomeProductAPI(Resource):
     # DB에서 user_id에 따른 물품 대여 목록 얻기
     @home.doc(security='apiKey')
-    @jwt_required()
+    @api_access_level(1)
     def get(self):
         database = Database()
         user_id = get_jwt_identity()

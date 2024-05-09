@@ -5,6 +5,7 @@ import datetime
 from utils.dto import AttendanceDTO
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from utils.enum_tool import AttendanceEnum
+from utils.api_access_level_tool import api_access_level
 
 # 월별 n주차 계산
 def get_week_of_month(date):
@@ -48,7 +49,7 @@ class AttendanceUserAPI(Resource):
     @attendance.response(200, 'OK', AttendanceDTO.response_data)
     @attendance.response(400, 'Bad Request', AttendanceDTO.response_message)
     @attendance.doc(security='apiKey')
-    @jwt_required()
+    @api_access_level(1)
     def get(self, attendance_id):
         user_id = get_jwt_identity()
 
@@ -82,8 +83,6 @@ class AttendanceUserAPI(Resource):
         # date를 문자열로 변환 
         for idx, record in enumerate(record_list):
             record_list[idx]['date'] = record['date'].strftime('%Y-%m-%d')
-
-        print(record_list)
         
         record_list.extend([None] * (prev_attendance_count - len(record_list)))
 
@@ -105,7 +104,7 @@ class AttendanceUserAPI(Resource):
     @attendance.response(200, 'OK', AttendanceDTO.response_message)
     @attendance.response(400, 'Bad Request', AttendanceDTO.response_message)
     @attendance.doc(security='apiKey')
-    @jwt_required()
+    @api_access_level(1)
     def put(self, attendance_id):
         user_id = get_jwt_identity()
 
@@ -142,7 +141,7 @@ class AttendanceDetailAPI(Resource):
     @attendance.response(200, 'OK', [AttendanceDTO.model_record_list_by_category])
     @attendance.response(400, 'Bad Request', AttendanceDTO.response_message)
     @attendance.doc(security='apiKey')
-    @jwt_required()
+    @api_access_level(1)
     def get(self):
         user_id = get_jwt_identity()
         
@@ -165,8 +164,8 @@ class AttendanceDetailAPI(Resource):
             week_of_month = get_week_of_month(attendance['date'])
 
             attendance_list[idx]['date'] = attendance['date'].strftime('%Y-%m-%d')
-            attendance_list[idx]['category'] = convert_to_string(AttendanceEnum.CATEGORY, attendance['category'])
-            attendance_list[idx]['state'] = convert_to_string(AttendanceEnum.USER_ATTENDANCE_STATE, attendance['state'])
+            attendance_list[idx]['category'] = AttendanceEnum.Category(attendance['category'])
+            attendance_list[idx]['state'] = AttendanceEnum.UserAttendanceState(attendance['state'])
 
             if attendance['category'] not in record_dictionary:
                 record_dictionary[attendance['category']] = []

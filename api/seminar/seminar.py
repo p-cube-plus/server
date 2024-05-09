@@ -4,6 +4,7 @@ from database.database import Database
 from utils.dto import SeminarDTO
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from utils.enum_tool import SeminarEnum
+from utils.api_access_level_tool import api_access_level
 
 seminar = SeminarDTO.api
 
@@ -14,7 +15,7 @@ class SeminarUserAPI(Resource):
     @seminar.response(200, 'OK', [SeminarDTO.model_seminar_with_id])
     @seminar.response(400, 'Bad Request', SeminarDTO.seminar_response_message)
     @seminar.doc(security='apiKey')
-    @jwt_required()
+    @api_access_level(1)
     def get(self):
         user_id = request.args['user_id']
 
@@ -43,7 +44,7 @@ class SeminarUserAPI(Resource):
     @seminar.response(201, 'Created', SeminarDTO.seminar_response_message)
     @seminar.response(400, 'Bad Request', SeminarDTO.seminar_response_message)
     @seminar.doc(security='apiKey')
-    @jwt_required()
+    @api_access_level(1)
     def post(self):
         user_id = request.args['user_id']
 
@@ -74,7 +75,7 @@ class SeminarUserAPI(Resource):
     @seminar.response(200, 'OK', SeminarDTO.seminar_response_message)
     @seminar.response(400, 'Bad Request', SeminarDTO.seminar_response_message)
     @seminar.doc(security='apiKey')
-    @jwt_required()
+    @api_access_level(1)
     def put(self):
         user_id = request.args['user_id']
 
@@ -106,7 +107,7 @@ class SeminarUserAPI(Resource):
     @seminar.response(200, 'OK', SeminarDTO.seminar_response_message)
     @seminar.response(400, 'Bad Request', SeminarDTO.seminar_response_message)
     @seminar.doc(security='apiKey')
-    @jwt_required()
+    @api_access_level(1)
     def delete(self):
         seminar_id = request.args['id']
 

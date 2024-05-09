@@ -3,6 +3,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from database.database import Database
 from datetime import datetime, timedelta
 from utils.aes_cipher import AESCipher
+from utils.api_access_level_tool import api_access_level
 
 product = Namespace('product')
 crypt = AESCipher()
@@ -11,7 +12,7 @@ crypt = AESCipher()
 @product.response(200, 'Success')
 @product.response(401, 'Unauthorized')
 class Product(Resource):
-    @jwt_required()
+    @api_access_level(1)
     @product.doc(security='apiKey')
     def get(self, product_code):
         database = Database()

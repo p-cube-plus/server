@@ -5,6 +5,7 @@ from utils.dto import AdminAttendanceDTO
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from utils.enum_tool import AttendanceEnum, UserEnum
 from utils.aes_cipher import AESCipher
+from utils.api_access_level_tool import api_access_level
 
 attendance = AdminAttendanceDTO.api
 
@@ -15,7 +16,7 @@ class AttendanceInfoAPI(Resource):
     @attendance.response(200, 'OK', AdminAttendanceDTO.model_attendance)
     @attendance.response(400, 'Bad Request', AdminAttendanceDTO.response_message)
     @attendance.doc(security='apiKey')
-    @jwt_required()
+    @api_access_level(2)
     def get(self):
         # Query Parameter 데이터 읽어오기
         category = AttendanceEnum.Category(request.args['category'])
@@ -48,7 +49,7 @@ class AttendanceInfoAPI(Resource):
     @attendance.response(200, 'OK', AdminAttendanceDTO.response_message)
     @attendance.response(400, 'Bad Request', AdminAttendanceDTO.response_message)
     @attendance.doc(security='apiKey')
-    @jwt_required()
+    @api_access_level(2)
     def post(self):
         # Body 데이터 읽어오기
         attendance = request.get_json()
@@ -77,7 +78,7 @@ class AttendanceInfoAPI(Resource):
     @attendance.response(200, 'OK', AdminAttendanceDTO.response_message)
     @attendance.response(400, 'Bad Request', AdminAttendanceDTO.response_message)
     @attendance.doc(security='apiKey')
-    @jwt_required()
+    @api_access_level(2)
     def put(self):
         # Body 데이터 읽어오기
         attendance = request.get_json()
@@ -107,7 +108,7 @@ class AttendanceInfoAPI(Resource):
     @attendance.response(200, 'OK', AdminAttendanceDTO.response_message)
     @attendance.response(400, 'Bad Request', AdminAttendanceDTO.response_message)
     @attendance.doc(security='apiKey')
-    @jwt_required()
+    @api_access_level(2)
     def delete(self):
         id = request.args['id']
         # DB 예외처리
@@ -137,7 +138,7 @@ class AttendanceUserListAPI(Resource):
     @attendance.response(200, 'OK', [AdminAttendanceDTO.model_admin_attendance_user])
     @attendance.response(400, 'Bad Request', AdminAttendanceDTO.response_message)
     @attendance.doc(security='apiKey')
-    @jwt_required()
+    @api_access_level(2)
     def get(self):
         # Query Parameter 데이터 읽어오기
         attendance_id = request.args['attendance_id']
@@ -180,7 +181,7 @@ class AttendanceUserAPI(Resource):
     @attendance.response(200, 'OK', AdminAttendanceDTO.model_user_attendance)
     @attendance.response(400, 'Bad Request', AdminAttendanceDTO.response_message)
     @attendance.doc(security='apiKey')
-    @jwt_required()
+    @api_access_level(2)
     def get(self):
         # Query Parameter 데이터 읽어오기
         attendance_id = request.args['attendance_id']
@@ -210,7 +211,7 @@ class AttendanceUserAPI(Resource):
     @attendance.response(200, 'OK', AdminAttendanceDTO.response_message)
     @attendance.response(400, 'Bad Request', AdminAttendanceDTO.response_message)
     @attendance.doc(security='apiKey')
-    @jwt_required()
+    @api_access_level(2)
     def put(self):
         # Body 데이터 읽어오기
         user_attendance = request.get_json()

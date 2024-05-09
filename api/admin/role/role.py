@@ -5,6 +5,7 @@ from datetime import datetime, date
 from utils.dto import AdminRoleDTO
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from utils.enum_tool import AdminEnum
+from utils.api_access_level_tool import api_access_level
 
 role = AdminRoleDTO.api
 
@@ -14,7 +15,7 @@ class AdminRoleListAPI(Resource):
     @role.response(200, 'OK', [AdminRoleDTO.model_admin_role])
     @role.response(400, 'Bad Request', AdminRoleDTO.response_admin_role_message)
     @role.doc(security='apiKey')
-    @jwt_required()
+    @api_access_level(2)
     def get(self):
         # DB 예외처리
         try:
@@ -43,7 +44,7 @@ class AdminRoleAPI(Resource):
     @role.response(200, 'OK', AdminRoleDTO.model_admin_role)
     @role.response(400, 'Bad Request', AdminRoleDTO.response_admin_role_message)
     @role.doc(security='apiKey')
-    @jwt_required()
+    @api_access_level(2)
     def get(self):
         # Query parameter 값 얻어오기
         id = request.args['id']
@@ -74,7 +75,7 @@ class AdminRoleAPI(Resource):
     @role.response(201, 'Created', AdminRoleDTO.response_admin_role_message)
     @role.response(400, 'Bad Request', AdminRoleDTO.response_admin_role_message)
     @role.doc(security='apiKey')
-    @jwt_required()
+    @api_access_level(2)
     def post(self):
         # Body 데이터 얻어오기
         admin = request.get_json()
@@ -101,7 +102,7 @@ class AdminRoleAPI(Resource):
     @role.response(200, 'OK', AdminRoleDTO.response_admin_role_message)
     @role.response(400, 'Bad Request', AdminRoleDTO.response_admin_role_message)
     @role.doc(security='apiKey')
-    @jwt_required()
+    @api_access_level(2)
     def put(self):
         # Body 데이터 얻어오기
         admin = request.get_json()
@@ -130,7 +131,7 @@ class AdminRoleAPI(Resource):
     @role.response(200, 'OK', AdminRoleDTO.response_admin_role_message)
     @role.response(400, 'Bad Request', AdminRoleDTO.response_admin_role_message)
     @role.doc(security='apiKey')
-    @jwt_required()
+    @api_access_level(2)
     def delete(self):
         # Query parameter 값 얻어오기
         id = request.args['id']
@@ -155,7 +156,7 @@ class AdminRoleCheckAPI(Resource):
     @role.response(200, 'OK', AdminRoleDTO.model_admin_role_user)
     @role.response(400, 'Bad Request', AdminRoleDTO.response_admin_role_message)
     @role.doc(security='apiKey')
-    @jwt_required()
+    @api_access_level(2)
     def get(self):
         # Query parameter 값 얻어오기
         user_id = request.args['user_id']
@@ -192,7 +193,7 @@ class AdminRoleCheckAPI(Resource):
 @role.route('/api-access-level')
 class AdminAPIAccessLevelAPI(Resource):
     @role.doc(security='apiKey')
-    @jwt_required()
+    @api_access_level(2)
     def get(self):
         user_id = request.args['user_id']
 
@@ -204,7 +205,7 @@ class AdminAPIAccessLevelAPI(Resource):
         return {'api_access_level': api_access_level}, 200
     
     @role.doc(security='apiKey')
-    @jwt_required()
+    @api_access_level(2)
     def put(self):
         data = request.get_json()
 

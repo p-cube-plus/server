@@ -5,6 +5,7 @@ from utils.aes_cipher import AESCipher
 from utils.dto import ProjectDTO
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from utils.enum_tool import ProjectEnum
+from utils.api_access_level_tool import api_access_level
 
 project = ProjectDTO.api
 crypt = AESCipher()
@@ -15,7 +16,7 @@ class ProjectListAPI(Resource):
     @project.response(200, 'OK', [ProjectDTO.model_project])
     @project.response(400, 'Bad Request', ProjectDTO.response_message)
     @project.doc(security='apiKey')
-    @jwt_required()
+    @api_access_level(1)
     def get(self):
         user_id = get_jwt_identity()
 
@@ -82,7 +83,7 @@ class ProjectAllListAPI(Resource):
     @project.response(200, 'OK', [ProjectDTO.model_project])
     @project.response(400, 'Bad Request', ProjectDTO.response_message)
     @project.doc(security='apiKey')
-    #@jwt_required()
+    @api_access_level(0)
     def get(self):
         # DB 예외 처리
         try:
