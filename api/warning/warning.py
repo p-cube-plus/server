@@ -61,15 +61,13 @@ class WarningUserAPI(Resource):
                     total_remove_warning += abs(warning['category']) \
                         if warning['category'] != 0 \
                         else total_add_warning - total_remove_warning
+                    
+                # 실제 경고 점수 계산
+                warning_list[idx]['value'] = warning['category'] / 2.0
 
+                # category를 문자열로 변경
+                warning_list[idx]['category'] = WarningEnum.Category(warning['category'])
             return {
-                'warning_category': {
-                    -2: '경고 차감', 
-                    -1: '주의 차감', 
-                    1: '주의 부여', 
-                    2: '경고 부여', 
-                    0: '경고 초기화'
-                },
                 'warning_add_list': add_list,
                 'warning_remove_list': remove_list,
                 'total_warning': total_warning / 2.0,
