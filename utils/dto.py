@@ -212,7 +212,8 @@ class WarningDTO:
     api = Namespace('warning', description='회원 경고 기능')
 
     model_warning = api.model('model_warning', {
-        'category': fields.Integer(description='회의 종류', enum=[-2, -1, 0, 1, 2]),
+        'category': fields.Integer(description='경고 종류', enum=[-2, -1, 0, 1, 2]),
+        'value': fields.Float(description='경고 점수', example=0.5),
         'date': fields.String(description='날짜', example='2023-09-26'),
         'description': fields.String(description='사유', example='지각'),
         'comment': nullable(fields.String)(description='비고', example='연락없이 무단 지각 함.')
@@ -231,7 +232,6 @@ class WarningDTO:
     })
 
     model_warning_list = api.model('model_warning_list', {
-        'warning_category': fields.Nested((model_warning_category), description='경고 카테고리 인덱스 설명'),
         'warning_add_list': fields.List(fields.Nested(model_warning_with_id), description='경고 목록'),
         'warning_remove_list': fields.List(fields.Nested(model_warning_with_id), description='경고 차감 목록'),
     })
