@@ -23,10 +23,11 @@ class SeminarUserAPI(Resource):
         try:
             # DB에서 user_id값에 맞는 세미나 목록 불러오기
             database = Database()
-            sql = f"SELECT * FROM seminars WHERE user_id = '{user_id}';"
-            seminar_list = database.execute_all(sql)
-        except:
-            return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!'}, 400
+            sql = "SELECT * FROM seminars WHERE user_id = %s;"
+            values = (user_id,)
+            seminar_list = database.execute_all(sql, values)
+        except Exception as e:
+            return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!', 'error': str(e)}, 400
         finally:
             database.close()
 
@@ -58,13 +59,12 @@ class SeminarUserAPI(Resource):
         try:
             # 세미나 정보를 DB에 추가
             database = Database()
-            sql = f"INSERT INTO seminars "\
-                f"VALUES(NULL, '{user_id}', '{seminar['title']}', "\
-                f"'{seminar['url']}', {seminar['category']}, '{seminar['date']}');"
-            database.execute(sql)
+            sql = "INSERT INTO seminars (user_id, title, url, category, date) VALUES (%s, %s, %s, %s, %s);"
+            values = (user_id, seminar['title'], seminar['url'], seminar['category'], seminar['date'])
+            database.execute(sql, values)
             database.commit()
-        except:
-            return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!'}, 400
+        except Exception as e:
+            return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!', 'error': str(e)}, 400
         finally:
             database.close()
 
@@ -89,14 +89,12 @@ class SeminarUserAPI(Resource):
         try:
             # 수정된 사항을 DB에 반영
             database = Database()
-            sql = f"UPDATE seminars SET "\
-            f"id = {seminar['id']}, user_id = '{user_id}', title = '{seminar['title']}', "\
-            f"url = '{seminar['url']}', category = {seminar['category']}, date = '{seminar['date']}' "\
-            f"WHERE id = {seminar['id']};"
-            database.execute(sql)
+            sql = "UPDATE seminars SET user_id = %s, title = %s, url = %s, category = %s, date = %s WHERE id = %s;"
+            values = (user_id, seminar['title'], seminar['url'], seminar['category'], seminar['date'], seminar['id'])
+            database.execute(sql, values)
             database.commit()
-        except:
-            return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!'}, 400
+        except Exception as e:
+            return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!', 'error': str(e)}, 400
         finally:
             database.close()
 
@@ -113,13 +111,14 @@ class SeminarUserAPI(Resource):
 
         # DB 예외 처리
         try:
-            # 세미나 정보를 DB  에서 삭제
+            # 세미나 정보를 DB에서 삭제
             database = Database()
-            sql = f"DELETE FROM seminars WHERE id = {seminar_id};"
-            database.execute(sql)
+            sql = "DELETE FROM seminars WHERE id = %s;"
+            values = (seminar_id,)
+            database.execute(sql, values)
             database.commit()
-        except:
-            return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!'}, 400
+        except Exception as e:
+            return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!', 'error': str(e)}, 400
         finally:
             database.close()
 

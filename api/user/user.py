@@ -22,15 +22,16 @@ class UserProfileAPI(Resource):
         try:
             # DB에서 회원 정보 조회
             database = Database()
-            sql = f"SELECT name, level, grade, part_index, rest_type, profile_image FROM users WHERE id = '{user_id}';"
-            user = database.execute_one(sql)
-        except:
-            return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!'}, 400
+            sql = "SELECT name, level, grade, part_index, rest_type, profile_image FROM users WHERE id = %s;"
+            values = (user_id,)
+            user = database.execute_one(sql, values)
+        except Exception as e:
+            return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!', 'error': str(e)}, 400
         finally:
             database.close()
 
         if not user: # 회원 정보가 조회되지 않을 시 처리
-            return { 'message': '회원 정보를 찾지 못했어요 :(' }, 400
+            return {'message': '회원 정보를 찾지 못했어요 :('}, 400
         else:
             # 회원 이름 복호화
             crypt = AESCipher()
@@ -57,10 +58,11 @@ class UserWarningAPI(Resource):
         try:
             # DB에서 user_id값에 맞는 경고 목록 불러오기
             database = Database()
-            sql = f"SELECT * FROM warnings WHERE user_id = '{user_id}' ORDER BY date;"
-            warning_list = database.execute_all(sql)
-        except:
-            return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!'}, 400
+            sql = "SELECT * FROM warnings WHERE user_id = %s ORDER BY date;"
+            values = (user_id,)
+            warning_list = database.execute_all(sql, values)
+        except Exception as e:
+            return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!', 'error': str(e)}, 400
         finally:
             database.close()
 
@@ -89,11 +91,17 @@ class UserProjectAPI(Resource):
         try:
             # DB에서 user_id값에 맞는 프로젝트 목록 불러오기
             database = Database()
-            sql = f"SELECT p.* FROM projects p JOIN project_members pm ON p.id = pm.project_id "\
-                f"WHERE pm.user_id = '{user_id}' ORDER BY p.start_date DESC;"
-            project_list = database.execute_all(sql)
-        except:
-            return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!'}, 400
+            sql = """
+                SELECT p.* 
+                FROM projects p 
+                JOIN project_members pm ON p.id = pm.project_id 
+                WHERE pm.user_id = %s 
+                ORDER BY p.start_date DESC;
+            """
+            values = (user_id,)
+            project_list = database.execute_all(sql, values)
+        except Exception as e:
+            return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!', 'error': str(e)}, 400
         finally:
             database.close()
 
@@ -114,8 +122,8 @@ class UserProjectAPI(Resource):
                 project_list[idx]['platform'] = project['platform'].split(',') if project['platform'] else []
 
                 # index를 Boolean 값으로 변경
-                project_list[idx]['is_finding_member'] = True if project['is_finding_member'] else False
-                project_list[idx]['is_able_inquiry'] = True if project['is_able_inquiry'] else False
+                project_list[idx]['is_finding_member'] = bool(project['is_finding_member'])
+                project_list[idx]['is_able_inquiry'] = bool(project['is_able_inquiry'])
 
             return project_list, 200
         
@@ -134,20 +142,24 @@ class UserListAPI(Resource):
 
         # 쿼리 파라미터에 맞게 SQL문 구성
         sql = "SELECT id, name, level, grade, part_index, rest_type, profile_image FROM users WHERE 1=1"
+        values = []
         if part_index:
-            sql += f" AND part_index = {UserEnum.Part(part_index)}"
+            sql += " AND part_index = %s"
+            values.append(UserEnum.Part(part_index))
         if level:
-            sql += f" AND level = {UserEnum.Level(level)}"
+            sql += " AND level = %s"
+            values.append(UserEnum.Level(level))
         if rest_type:
-            sql += f" AND rest_type = {UserEnum.RestType(rest_type)}"
+            sql += " AND rest_type = %s"
+            values.append(UserEnum.RestType(rest_type))
 
         # DB 예외처리
         try:
             # 회원 목록 얻기
             database = Database()
-            user_list = database.execute_all(sql)
-        except:
-            return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!'}, 400
+            user_list = database.execute_all(sql, tuple(values))
+        except Exception as e:
+            return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!', 'error': str(e)}, 400
         finally:
             database.close()
 

@@ -9,12 +9,43 @@ from utils.api_access_level_tool import api_access_level
 
 attendance = AdminAttendanceDTO.api
 
+@attendance.route('/all')
+class AttendanceListAPI(Resource):
+    @attendance.response(200, 'OK', [AdminAttendanceDTO.model_attendance_info])
+    @attendance.response(400, 'Bad Request', AdminAttendanceDTO.response_message)
+    @attendance.doc(security='apiKey')
+    @api_access_level(2)
+    def get(self):
+        # DB 예외 처리
+        try:
+            # DB에서 전체 attendance 목록을 날짜 순으로 가져오기
+            database = Database()
+            sql = "SELECT id, category, date, first_auth_start_time, first_auth_end_time, "\
+                  "second_auth_start_time, second_auth_end_time FROM attendance ORDER BY date;"
+            attendance_list = database.execute_all(sql)
+        except Exception as e:
+            return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!', 'error': str(e)}, 400
+        finally:
+            database.close()
+
+        # 데이터를 적절히 문자열로 변환
+        for attendance in attendance_list:
+            attendance['category'] = AttendanceEnum.Category(attendance['category'])
+            attendance['date'] = attendance['date'].strftime('%Y-%m-%d')
+            attendance['first_auth_start_time'] = str(attendance['first_auth_start_time'])
+            attendance['first_auth_end_time'] = str(attendance['first_auth_end_time'])
+            attendance['second_auth_start_time'] = str(attendance['second_auth_start_time'])
+            attendance['second_auth_end_time'] = str(attendance['second_auth_end_time'])
+
+        return attendance_list, 200
+
+
 @attendance.route("")
 class AttendanceInfoAPI(Resource):
     # category, date에 따른 출석 정보 얻기
     @attendance.expect(AdminAttendanceDTO.query_date_and_category, validate=True)
     @attendance.response(200, 'OK', AdminAttendanceDTO.model_attendance)
-    @attendance.response(400, 'Bad Request', AdminAttendanceDTO.response_message)
+    @attendance.response(400, 'Bad Request', AdminAttendanceDTO.response_message)   
     @attendance.doc(security='apiKey')
     @api_access_level(2)
     def get(self):
@@ -26,11 +57,12 @@ class AttendanceInfoAPI(Resource):
         try:
             # DB에서 category, date값에 맞는 출석 정보 가져오기
             database = Database()
-            sql = f"SELECT id, first_auth_start_time, first_auth_end_time, "\
-                f"second_auth_start_time, second_auth_end_time FROM attendance WHERE category = {category} and date = '{date}';"
-            attendance = database.execute_one(sql)
-        except:
-            return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!'}, 400
+            sql = "SELECT id, first_auth_start_time, first_auth_end_time, "\
+                  "second_auth_start_time, second_auth_end_time FROM attendance "\
+                  "WHERE category = %s and date = %s;"
+            attendance = database.execute_one(sql, (category, date))
+        except Exception as e:
+            return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!', 'error': str(e)}, 400
         finally:
             database.close()
 
@@ -61,18 +93,24 @@ class AttendanceInfoAPI(Resource):
         try:
             # 출석 정보 DB에 추가
             database = Database()
-            sql = f"INSERT INTO attendance VALUES(NULL, {attendance['category']}, '{attendance['date']}', "\
-                f"'{attendance['first_auth_start_time']}', '{attendance['first_auth_end_time']}', "\
-                f"'{attendance['second_auth_start_time']}', '{attendance['second_auth_end_time']}');"
-            database.execute(sql)
+            sql = "INSERT INTO attendance VALUES(NULL, %s, %s, %s, %s, %s, %s)"
+            values = (
+                attendance['category'],
+                attendance['date'],
+                attendance['first_auth_start_time'],
+                attendance['first_auth_end_time'],
+                attendance['second_auth_start_time'],
+                attendance['second_auth_end_time']
+            )
+            database.execute(sql, values)
             database.commit()
-        except:
-            return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!'}, 400
+        except Exception as e:
+            return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!', 'error': str(e)}, 400
         finally:
             database.close()
 
         return {'message': '출석 정보를 추가했어요 :)'}, 200
-    
+
     # 출석 정보 수정
     @attendance.expect(AdminAttendanceDTO.model_attendance, validate=True)
     @attendance.response(200, 'OK', AdminAttendanceDTO.response_message)
@@ -83,25 +121,32 @@ class AttendanceInfoAPI(Resource):
         # Body 데이터 읽어오기
         attendance = request.get_json()
 
-        attendance['category'] = AttendanceEnum.Category(attendance['category'])
-
         # DB 예외처리
         try:
             # 수정된 출석 정보를 DB에 반영
             database = Database()
             sql = "UPDATE attendance SET "\
-                f"category = {attendance['category']}, date = '{attendance['date']}', "\
-                f"first_auth_start_time = '{attendance['first_auth_start_time']}', first_auth_end_time = '{attendance['first_auth_end_time']}', "\
-                f"second_auth_start_time = '{attendance['second_auth_start_time']}', second_auth_end_time = '{attendance['second_auth_end_time']}' "\
-                f"WHERE id = {attendance['id']}"
-            database.execute(sql)
+                "date = %s, "\
+                "first_auth_start_time = %s, first_auth_end_time = %s, "\
+                "second_auth_start_time = %s, second_auth_end_time = %s "\
+                "WHERE id = %s"
+            values = (
+                attendance['date'],
+                attendance['first_auth_start_time'],
+                attendance['first_auth_end_time'],
+                attendance['second_auth_start_time'],
+                attendance['second_auth_end_time'],
+                attendance['id']
+            )
+            database.execute(sql, values)
             database.commit()
-        except:
-            return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!'}, 400
+        except Exception as e:
+            return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!', 'error': str(e)}, 400
         finally:
             database.close()
 
         return {'message': '출석 정보를 수정했어요 :)'}, 200
+
     
     # 출석 정보 삭제
     @attendance.expect(AdminAttendanceDTO.query_raw_attendance_id, validate=True)
@@ -116,16 +161,16 @@ class AttendanceInfoAPI(Resource):
             database = Database()
 
             # 회원 출석 정보 삭제
-            sql = f"DELETE FROM user_attendance WHERE attendance_id = {id};"
-            database.execute(sql)
+            sql = "DELETE FROM user_attendance WHERE attendance_id = %s;"
+            database.execute(sql, (id,))
 
             # 출석 정보 삭제
-            sql = f"DELETE FROM attendance WHERE id = {id};"
-            database.execute(sql)
+            sql = "DELETE FROM attendance WHERE id = %s;"
+            database.execute(sql, (id,))
 
             database.commit()
-        except:
-            return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!'}, 400
+        except Exception as e:
+            return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!', 'error': str(e)}, 400
         finally:
             database.close()
 
@@ -148,15 +193,15 @@ class AttendanceUserListAPI(Resource):
             # DB에서 회원 목록 불러오기
             database = Database()
             sql = "SELECT u.id, u.name, u.grade, u.part_index, u.rest_type, ua.first_auth_time, ua.second_auth_time, ua.state FROM users u LEFT JOIN user_attendance ua "\
-                f"ON u.id = ua.user_id WHERE ua.attendance_id = {attendance_id};"
-            user_list = database.execute_all(sql)
+                  "ON u.id = ua.user_id WHERE ua.attendance_id = %s;"
+            user_list = database.execute_all(sql, (attendance_id,))
 
             # 회원 이름 복호화
             cript = AESCipher()
             for idx, user in enumerate(user_list):
                 user_list[idx]['name'] = cript.decrypt(user['name'])
-        except:
-            return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!'}, 400
+        except Exception as e:
+            return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!', 'error': str(e)}, 400
         finally:
             database.close()
 
@@ -191,10 +236,10 @@ class AttendanceUserAPI(Resource):
         try:
             # DB에서 회원 출석 정보 불러오기
             database = Database()
-            sql = f"SELECT * FROM user_attendance WHERE attendance_id = {attendance_id} and user_id = '{user_id}';"
-            user_attendance = database.execute_one(sql)
-        except:
-            return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!'}, 400
+            sql = "SELECT * FROM user_attendance WHERE attendance_id = %s and user_id = %s;"
+            user_attendance = database.execute_one(sql, (attendance_id, user_id))
+        except Exception as e:
+            return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!', 'error': str(e)}, 400
         finally:
             database.close()
 
@@ -224,13 +269,21 @@ class AttendanceUserAPI(Resource):
             # 수정된 회원 출석 정보를 DB에 반영
             database = Database()
             sql = "INSERT INTO user_attendance (attendance_id, user_id, state, first_auth_time, second_auth_time) VALUES(%s, %s, %s, %s, %s) "\
-                "ON DUPLICATE KEY UPDATE state = %s, first_auth_time = %s, second_auth_time = %s;"
-            value = (user_attendance['attendance_id'], user_attendance['user_id'], user_attendance['state'], user_attendance['first_auth_time'], user_attendance['second_auth_time'], 
-                    user_attendance['state'], user_attendance['first_auth_time'], user_attendance['second_auth_time'])
-            database.execute(sql, value)
+                  "ON DUPLICATE KEY UPDATE state = %s, first_auth_time = %s, second_auth_time = %s;"
+            values = (
+                user_attendance['attendance_id'],
+                user_attendance['user_id'],
+                user_attendance['state'],
+                user_attendance['first_auth_time'],
+                user_attendance['second_auth_time'],
+                user_attendance['state'],
+                user_attendance['first_auth_time'],
+                user_attendance['second_auth_time']
+            )
+            database.execute(sql, values)
             database.commit()
-        except:
-            return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!'}, 400
+        except Exception as e:
+            return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!', 'error': str(e)}, 400
         finally:
             database.close()
 

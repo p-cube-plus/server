@@ -129,6 +129,16 @@ class AdminNotificationDTO:
 class AdminAttendanceDTO:
     api = Namespace('attendance', description='임원진 출석 관리')
 
+    model_attendance_info = api.model('model_attendance_info', {
+        'id': fields.Integer(description='ID', example=0),
+        'category': fields.String(description='출석 종류', example='정기'),
+        'date': fields.Date(description='출석 날짜', example='2023-09-19'),
+        'first_auth_start_time': nullable(fields.String)(description='1차 인증 시작 시간', example='16:55:00 (nullable)'),
+        'first_auth_end_time': nullable(fields.String)(description='1차 인증 종료 시간', example='16:55:00 (nullable)'),
+        'second_auth_start_time': nullable(fields.String)(description='2차 인증 시작 시간', example='16:55:00 (nullable)'),
+        'second_auth_end_time': nullable(fields.String)(description='2차 인증 종료 시간', example='16:55:00 (nullable)'),
+    })
+
     model_attendance = api.model('model_attendance', {
         'id': fields.Integer(description='ID', example=0),
         'date': fields.Date(description='출석 날짜', example='2023-09-19'),

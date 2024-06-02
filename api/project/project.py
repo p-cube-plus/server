@@ -24,11 +24,17 @@ class ProjectListAPI(Resource):
         try:
             # DB에서 user_id값에 맞는 프로젝트 목록 불러오기
             database = Database()
-            sql = f"SELECT p.* FROM projects p JOIN project_members pm ON p.id = pm.project_id "\
-                f"WHERE pm.user_id = '{user_id}' ORDER BY p.start_date DESC;"
-            project_list = database.execute_all(sql)
-        except:
-            return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!'}, 400
+            sql = """
+                SELECT p.* 
+                FROM projects p 
+                JOIN project_members pm ON p.id = pm.project_id 
+                WHERE pm.user_id = %s 
+                ORDER BY p.start_date DESC;
+            """
+            values = (user_id,)
+            project_list = database.execute_all(sql, values)
+        except Exception as e:
+            return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!', 'error': str(e)}, 400
         finally:
             database.close()
 
@@ -50,36 +56,39 @@ class ProjectListAPI(Resource):
                 project_list[idx]['platform'] = project['platform'].split(',') if project['platform'] else []
 
                 # index를 Boolean 값으로 변경
-                project_list[idx]['is_finding_member'] = True if project['is_finding_member'] else False
-                project_list[idx]['is_able_inquiry'] = True if project['is_able_inquiry'] else False
+                project_list[idx]['is_finding_member'] = bool(project['is_finding_member'])
+                project_list[idx]['is_able_inquiry'] = bool(project['is_able_inquiry'])
 
                 try:
                     database = Database()
-                    sql = f'''SELECT u.is_signed, u.name, u.level, u.part_index, u.profile_image, pm.is_pm
-                            FROM project_members AS pm
-                            JOIN users AS u ON pm.user_id = u.id
-                            WHERE pm.project_id = {project['id']};'''
-                    members = database.execute_all(sql)
-                except:
-                    return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!'}, 400
+                    sql = """
+                        SELECT u.is_signed, u.name, u.level, u.part_index, u.profile_image, pm.is_pm
+                        FROM project_members AS pm
+                        JOIN users AS u ON pm.user_id = u.id
+                        WHERE pm.project_id = %s;
+                    """
+                    values = (project['id'],)
+                    members = database.execute_all(sql, values)
+                except Exception as e:
+                    return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!', 'error': str(e)}, 400
                 finally:
                     database.close()
 
                 pm_idx = None
                 for i, member in enumerate(members):
                     member['name'] = crypt.decrypt(member['name'])
-                    member['is_signed'] = True if member['is_signed'] else False
+                    member['is_signed'] = bool(member['is_signed'])
                     is_pm = member.pop('is_pm')
                     if is_pm:
                         pm_idx = i
-                project_list[idx]['pm'] = members.pop(pm_idx) if pm_idx != None else None
+                project_list[idx]['pm'] = members.pop(pm_idx) if pm_idx is not None else None
                 project_list[idx]['members'] = members
 
             return project_list, 200
 
 @project.route("/all")
 class ProjectAllListAPI(Resource):
-    # 회원의 참여 프로젝트 목록 얻기
+    # 전체 프로젝트 목록 얻기
     @project.response(200, 'OK', [ProjectDTO.model_project])
     @project.response(400, 'Bad Request', ProjectDTO.response_message)
     @project.doc(security='apiKey')
@@ -89,10 +98,10 @@ class ProjectAllListAPI(Resource):
         try:
             # 전체 프로젝트 목록 불러오기
             database = Database()
-            sql = f"SELECT * FROM projects ORDER BY start_date DESC;"
+            sql = "SELECT * FROM projects ORDER BY start_date DESC;"
             project_list = database.execute_all(sql)
-        except:
-            return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!'}, 400
+        except Exception as e:
+            return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!', 'error': str(e)}, 400
         finally:
             database.close()
 
@@ -114,29 +123,32 @@ class ProjectAllListAPI(Resource):
                 project_list[idx]['platform'] = project['platform'].split(',') if project['platform'] else []
 
                 # index를 Boolean 값으로 변경
-                project_list[idx]['is_finding_member'] = True if project['is_finding_member'] else False
-                project_list[idx]['is_able_inquiry'] = True if project['is_able_inquiry'] else False
+                project_list[idx]['is_finding_member'] = bool(project['is_finding_member'])
+                project_list[idx]['is_able_inquiry'] = bool(project['is_able_inquiry'])
 
                 try:
                     database = Database()
-                    sql = f'''SELECT u.is_signed, u.name, u.level, u.part_index, u.profile_image, pm.is_pm
-                            FROM project_members AS pm
-                            JOIN users AS u ON pm.user_id = u.id
-                            WHERE pm.project_id = {project['id']};'''
-                    members = database.execute_all(sql)
-                except:
-                    return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!'}, 400
+                    sql = """
+                        SELECT u.is_signed, u.name, u.level, u.part_index, u.profile_image, pm.is_pm
+                        FROM project_members AS pm
+                        JOIN users AS u ON pm.user_id = u.id
+                        WHERE pm.project_id = %s;
+                    """
+                    values = (project['id'],)
+                    members = database.execute_all(sql, values)
+                except Exception as e:
+                    return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!', 'error': str(e)}, 400
                 finally:
                     database.close()
 
                 pm_idx = None
                 for i, member in enumerate(members):
                     member['name'] = crypt.decrypt(member['name'])
-                    member['is_signed'] = True if member['is_signed'] else False
+                    member['is_signed'] = bool(member['is_signed'])
                     is_pm = member.pop('is_pm')
                     if is_pm:
                         pm_idx = i
-                project_list[idx]['pm'] = members.pop(pm_idx) if pm_idx != None else None
+                project_list[idx]['pm'] = members.pop(pm_idx) if pm_idx is not None else None
                 project_list[idx]['members'] = members
 
             return project_list, 200

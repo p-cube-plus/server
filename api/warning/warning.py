@@ -21,14 +21,15 @@ class WarningUserAPI(Resource):
         try:
             # DB에서 user_id값에 맞는 경고 목록 불러오기
             database = Database()
-            sql = f"SELECT id, category, date, description, comment FROM warnings WHERE user_id = '{user_id}' ORDER BY date;"
-            warning_list = database.execute_all(sql)
-        except:
-            return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!'}, 400
+            sql = "SELECT id, category, date, description, comment FROM warnings WHERE user_id = %s ORDER BY date;"
+            values = (user_id,)
+            warning_list = database.execute_all(sql, values)
+        except Exception as e:
+            return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!', 'error': str(e)}, 400
         finally:
             database.close()
 
-        if not warning_list: # 경고를 받은 적이 없을 때 처리
+        if not warning_list:  # 경고를 받은 적이 없을 때 처리
             return {
                 'warning_category': {}, 
                 'warning_add_list': [],
@@ -62,7 +63,13 @@ class WarningUserAPI(Resource):
                         else total_add_warning - total_remove_warning
 
             return {
-                'warning_category': {-2: '경고 차감', -1: '주의 차감', 1: '주의 부여', 2: '경고 부여', 0: '경고 초기화'},
+                'warning_category': {
+                    -2: '경고 차감', 
+                    -1: '주의 차감', 
+                    1: '주의 부여', 
+                    2: '경고 부여', 
+                    0: '경고 초기화'
+                },
                 'warning_add_list': add_list,
                 'warning_remove_list': remove_list,
                 'total_warning': total_warning / 2.0,

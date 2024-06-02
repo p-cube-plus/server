@@ -16,26 +16,29 @@ class Product(Resource):
     @product.doc(security='apiKey')
     def get(self, product_code):
         database = Database()
-        sql = f"SELECT * FROM products WHERE code = '{product_code}';"
-        product = database.execute_one(sql)
-        
-        product['status'] = { 'value': product['status'], 'rent_user': None }
-            
-        sql = f"SELECT * FROM rent_list WHERE product_code = '{product['code']}' and return_day IS NULL;"
-        rent_log = database.execute_one(sql)
-            
-        if rent_log:
-            sql = f"SELECT name FROM users WHERE id = '{rent_log['user_id']}';"
-            rent_user = database.execute_one(sql)
-            product['status']['rent_user'] = crypt.decrypt(rent_user['name'])
-        
-        database.close()
+        sql = "SELECT * FROM products WHERE code = %s;"
+        values = (product_code,)
+        product = database.execute_one(sql, values)
         
         if not product:     # 물품이 없을 때의 처리
             message = { 'message': '해당 물품이 존재하지 않아요 :(' }
             return message, 400
-        else:
-            return product, 200
+
+        product['status'] = { 'value': product['status'], 'rent_user': None }
+            
+        sql = "SELECT * FROM rent_list WHERE product_code = %s and return_day IS NULL;"
+        values = (product['code'],)
+        rent_log = database.execute_one(sql, values)
+            
+        if rent_log:
+            sql = "SELECT name FROM users WHERE id = %s;"
+            values = (rent_log['user_id'],)
+            rent_user = database.execute_one(sql, values)
+            product['status']['rent_user'] = crypt.decrypt(rent_user['name'])
+        
+        database.close()
+        
+        return product, 200
 
 @product.route("/list")
 @product.response(200, 'Success')
@@ -45,18 +48,20 @@ class ProductList(Resource):
     @product.doc(security='apiKey')
     def get(self):        
         database = Database()
-        sql = f"SELECT * FROM products;"
+        sql = "SELECT * FROM products;"
         product_list = database.execute_all(sql)
         
         for idx, product in enumerate(product_list):
             product_list[idx]['status'] = { 'value': product['status'], 'rent_user': None }
             
-            sql = f"SELECT * FROM rent_list WHERE product_code = '{product['code']}' and return_day IS NULL;"
-            rent_log = database.execute_one(sql)
+            sql = "SELECT * FROM rent_list WHERE product_code = %s and return_day IS NULL;"
+            values = (product['code'],)
+            rent_log = database.execute_one(sql, values)
             
             if rent_log:
-                sql = f"SELECT name FROM users WHERE id = '{rent_log['user_id']}';"
-                rent_user = database.execute_one(sql)
+                sql = "SELECT name FROM users WHERE id = %s;"
+                values = (rent_log['user_id'],)
+                rent_user = database.execute_one(sql, values)
                 product_list[idx]['status']['rent_user'] = crypt.decrypt(rent_user['name'])
         
         database.close()
@@ -75,18 +80,21 @@ class SpecificProductList(Resource):
     @product.doc(security='apiKey')
     def get(self, product_name):
         database = Database()
-        sql = f"SELECT * FROM products WHERE name LIKE '%%{product_name}%%'"
-        product_list = database.execute_all(sql)
+        sql = "SELECT * FROM products WHERE name LIKE %s;"
+        values = (f"%{product_name}%",)
+        product_list = database.execute_all(sql, values)
         
         for idx, product in enumerate(product_list):
             product_list[idx]['status'] = { 'value': product['status'], 'rent_user': None }
             
-            sql = f"SELECT * FROM rent_list WHERE product_code = '{product['code']}' and return_day IS NULL;"
-            rent_log = database.execute_one(sql)
+            sql = "SELECT * FROM rent_list WHERE product_code = %s and return_day IS NULL;"
+            values = (product['code'],)
+            rent_log = database.execute_one(sql, values)
             
             if rent_log:
-                sql = f"SELECT name FROM users WHERE id = '{rent_log['user_id']}';"
-                rent_user = database.execute_one(sql)
+                sql = "SELECT name FROM users WHERE id = %s;"
+                values = (rent_log['user_id'],)
+                rent_user = database.execute_one(sql, values)
                 product_list[idx]['status']['rent_user'] = crypt.decrypt(rent_user['name'])
                 
         database.close()
@@ -105,32 +113,37 @@ class RentProduct(Resource):
     def post(self, product_code):
         user_id = get_jwt_identity()
         database = Database()
-        sql = f"SELECT * FROM products WHERE code = '{product_code}';"
-        product = database.execute_one(sql)
+        sql = "SELECT * FROM products WHERE code = %s;"
+        values = (product_code,)
+        product = database.execute_one(sql, values)
         
-        if product['is_available']: # 물품 대여에 대한 로직
+        if product and product['is_available']: # 물품 대여에 대한 로직
             # 물품 정보를 대여중인 상태로 업데이트
             status = "대여중"
-            sql = f"UPDATE products SET is_available = {0}, status = '{status}' WHERE code = '{product_code}';"
-            database.execute(sql)
+            sql = "UPDATE products SET is_available = %s, status = %s WHERE code = %s;"
+            values = (0, status, product_code)
+            database.execute(sql, values)
             database.commit()
 
             # 물품 대여 내역 추가
             now = datetime.now()
             rent_day = now.date()
             deadline = rent_day + timedelta(days=30)
-            sql = f"INSERT INTO rent_list(product_code, user_id, deadline, rent_day, return_day) "\
-                f"VALUES('{product_code}', '{user_id}', '{deadline}', '{rent_day}', NULL);"
-            database.execute(sql)
+            sql = "INSERT INTO rent_list(product_code, user_id, deadline, rent_day, return_day) "\
+                "VALUES(%s, %s, %s, %s, NULL);"
+            values = (product_code, user_id, deadline, rent_day)
+            database.execute(sql, values)
             database.commit()
 
             # 물품 정보가 변경 되었으므로 물품 상세 정보 재조회
-            sql = f"SELECT * FROM products WHERE code = '{product_code}';"
-            product_data = database.execute_one(sql)
+            sql = "SELECT * FROM products WHERE code = %s;"
+            values = (product_code,)
+            product_data = database.execute_one(sql, values)
 
             # 빌린 사람 이름 조회
-            sql = f"SELECT name FROM users WHERE id = '{user_id}'"
-            rent_user = database.execute_one(sql)
+            sql = "SELECT name FROM users WHERE id = %s;"
+            values = (user_id,)
+            rent_user = database.execute_one(sql, values)
 
             # 디데이 계산
             d_day = (deadline - rent_day).days
@@ -172,16 +185,18 @@ class ReturnProduct(Resource):
     def put(self, product_code):
         user_id = get_jwt_identity()
         database = Database()
-        sql = f"SELECT * FROM products WHERE code = '{product_code}';"
-        product = database.execute_one(sql)
+        sql = "SELECT * FROM products WHERE code = %s;"
+        values = (product_code,)
+        product = database.execute_one(sql, values)
 
         # 물품 반납에 대한 로직
-        if not product['is_available']:
+        if product and not product['is_available']:
             if product['status'] == "대여중":
                 # 맞는 대여 내역이 있는지 검증 
-                sql = f"SELECT * FROM rent_list "\
-                    f"WHERE product_code = '{product_code}' and user_id = '{user_id}' and return_day IS NULL;"
-                rent_data = database.execute_one(sql)
+                sql = "SELECT * FROM rent_list "\
+                    "WHERE product_code = %s and user_id = %s and return_day IS NULL;"
+                values = (product_code, user_id)
+                rent_data = database.execute_one(sql, values)
                 if not rent_data:
                     return { 'message': '데이터가 올바르지 않아요 :(\n지속적으로 발생 시 문의해주세요!' }, 500
                 
@@ -189,19 +204,22 @@ class ReturnProduct(Resource):
                 now = datetime.now()
                 return_day = now.date()
                 status = "대여 가능"
-                sql = f"UPDATE rent_list SET return_day = '{return_day}' "\
-                    f"WHERE product_code = '{product_code}' and user_id = '{user_id}' and return_day IS NULL;"
-                database.execute(sql)
+                sql = "UPDATE rent_list SET return_day = %s "\
+                    "WHERE product_code = %s and user_id = %s and return_day IS NULL;"
+                values = (return_day, product_code, user_id)
+                database.execute(sql, values)
                 database.commit()
 
                 # 물품 정보 수정
-                sql = f"UPDATE products SET is_available = {1}, status = '{status}' WHERE code = '{product_code}';"
-                database.execute(sql)
+                sql = "UPDATE products SET is_available = %s, status = %s WHERE code = %s;"
+                values = (1, status, product_code)
+                database.execute(sql, values)
                 database.commit()
 
                 # 물품 정보가 변경 되었으므로 물품 상세 정보 재조회
-                sql = f"SELECT * FROM products WHERE code = '{product_code}';"
-                product_data = database.execute_one(sql)
+                sql = "SELECT * FROM products WHERE code = %s;"
+                values = (product_code,)
+                product_data = database.execute_one(sql, values)
 
                 # 물품 상태 정보 추가
                 product_data['status'] = { 'value': status, 'rent_user': None }

@@ -46,7 +46,7 @@ app.config['SESSION_PERMANENT'] = bool(config['session']['session_permanent'])
 app.config['SESSION_USE_SIGNER'] = bool(config['session']['session_use_signer'])
 app.config['SESSION_MEMCACHED'] = mc
 
-app.permanent_session_lifetime = datetime.timedelta(minutes=int(config['session']['session_lifetime']))
+app.permanent_session_lifetime = datetime.timedelta(minutes=int(config['session']['session_lifetime']) + 100)
 
 @jwt.token_in_blocklist_loader
 def check_if_token_is_revoked(jwt_header, jwt_payload):
