@@ -2,7 +2,7 @@ import configparser
 import requests
 import hashlib
 import re
-from flask import Flask, request, session
+from flask import Flask, request, session, current_app
 from flask_restx import Resource, Namespace
 from flask_jwt_extended import create_access_token, create_refresh_token
 from database.database import Database
@@ -21,9 +21,6 @@ oauth = OAuthDTO.api
 
 def generate_code():
     return str(random.randint(0, 999999)).zfill(6)
-
-def compare_code(code):
-    return 'code' in session and session['code'] == code
 
 @oauth.route("/naver/login")
 class NaverLogin(Resource):
@@ -115,8 +112,10 @@ class OauthCodeRequestAPI(Resource):
         phone_number = code_request['phone_number']
 
         code = generate_code()
-        session['code'] = code
-        session.modified = True
+
+        # memcached에 5분간 저장
+        mc = current_app.extensions['memcache_client']
+        mc.set(phone_number, code, 60 * 5)
 
         message = f"[PCube+]\n인증번호는 {code}입니다."
         result = sms.send_msg(phone_number.replace("-", ""), message)
@@ -132,11 +131,14 @@ class OauthCodeConfirmAPI(Resource):
     @oauth.response(200, 'OK', OAuthDTO.response_oauth_code_result)
     def post(self):
         code_confirm = request.get_json()
-        code = code_confirm['code']
+        phone_number = code_confirm['phone_number']
+        input_code = code_confirm['code']
 
-        if compare_code(code):
-            session.pop('code')
-            session.modified = True
+        mc = current_app.extensions['memcache_client']
+        stored_code = mc.get(phone_number)
+
+        if stored_code and stored_code == input_code:
+            mc.delete(phone_number)
             return {'is_verified': True}, 200
         else:
             return {'is_verified': False}, 200

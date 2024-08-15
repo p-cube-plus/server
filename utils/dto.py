@@ -478,6 +478,7 @@ class OAuthDTO:
     })
 
     model_oauth_code_confirm = api.model('model_oauth_code_confirm', {
+        'phone_number': fields.String(description='회원 휴대폰 번호', example='010-XXXX-YYYY'),
         'code': fields.String(description='인증 번호', example='123456')
     })
 
