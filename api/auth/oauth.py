@@ -2,6 +2,7 @@ import configparser
 import requests
 import hashlib
 import re
+import uuid
 from flask import Flask, request, session, current_app
 from flask_restx import Resource, Namespace
 from flask_jwt_extended import create_access_token, create_refresh_token
@@ -108,37 +109,46 @@ class OauthCodeRequestAPI(Resource):
     @oauth.expect(OAuthDTO.model_oauth_code_request, validate=True)
     @oauth.response(200, 'OK', OAuthDTO.response_oauth_sms_validation)
     def post(self):
+        # 전화번호 얻어오기
         code_request = request.get_json()
         phone_number = code_request['phone_number']
 
+        # 인증번호 생성
         code = generate_code()
 
-        # memcached에 5분간 저장
-        mc = current_app.extensions['memcache_client']
-        mc.set(phone_number, code, 60 * 5)
-
+        # SMS 메시지 발송
         message = f"[PCube+]\n인증번호는 {code}입니다."
         result = sms.send_msg(phone_number.replace("-", ""), message)
 
-        if result.status_code == 200:
-            return {'is_success': True}, 200
+        if result.status_code == 200: # SMS 메시지 발송 성공 시
+            # 식별자 생성
+            identifier = str(uuid.uuid4())
+
+            # (식별자, 인증번호) 정보를 memcached에 5분간 저장
+            mc = current_app.extensions['memcache_client']
+            mc.set(identifier, code, 60 * 5)
+
+            return {'is_success': True, 'identifier': identifier}, 200
         else:
-            return {'is_success': False}, 200
+            return {'is_success': False, 'identifier': None}, 200
 
 @oauth.route('/code/confirm')
 class OauthCodeConfirmAPI(Resource):
     @oauth.expect(OAuthDTO.model_oauth_code_confirm, validate=True)
     @oauth.response(200, 'OK', OAuthDTO.response_oauth_code_result)
     def post(self):
+        # 식별자, 인증번호 얻어오기
         code_confirm = request.get_json()
-        phone_number = code_confirm['phone_number']
+        identifier = code_confirm['identifier']
         input_code = code_confirm['code']
 
+        # 저장된 인증번호 불러오기
         mc = current_app.extensions['memcache_client']
-        stored_code = mc.get(phone_number)
+        stored_code = mc.get(identifier)
 
+        # 인증번호 비교
         if stored_code and stored_code == input_code:
-            mc.delete(phone_number)
+            mc.delete(identifier)
             return {'is_verified': True}, 200
         else:
             return {'is_verified': False}, 200
