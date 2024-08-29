@@ -478,6 +478,7 @@ class OAuthDTO:
     })
 
     model_oauth_code_confirm = api.model('model_oauth_code_confirm', {
+        'identifier': fields.String(description='휴대폰 식별자'),
         'code': fields.String(description='인증 번호', example='123456')
     })
 
@@ -488,7 +489,8 @@ class OAuthDTO:
     })
 
     response_oauth_sms_validation = api.model('response_oauth_sms_validation', {
-        'is_success': fields.Boolean(description='SMS API 정상 호출 여부', example=True)
+        'is_success': fields.Boolean(description='SMS API 정상 호출 여부', example=True),
+        'identifier': fields.String(description='휴대폰 식별자')
     })
 
     response_oauth_code_result = api.model('response_oauth_result', {
