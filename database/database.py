@@ -6,23 +6,29 @@ from functools import wraps
 config = configparser.ConfigParser()
 config.read_file(open('config/config.ini'))
 
+db_config = {
+        'host': config['database']['host'],
+    'user': config['database']['user'],
+    'password': config['database']['password'],
+    'db': config['database']['db'],
+    'port': int(config['database']['port']),
+    'charset': config['database']['charset'],
+    'cursorclass': pymysql.cursors.DictCursor,
+}
+
 class Database:
     _pool = None
 
-    def __init__(self):
-        if Database._pool is None:
-            Database._pool = Pool(
-                host = config['database']['host'],
-                user = config['database']['user'],
-                password = config['database']['password'],
-                db = config['database']['db'],
-                port = int(config['database']['port']),
-                charset = config['database']['charset'],
-                cursorclass=pymysql.cursors.DictCursor,
-            )
-            Database._pool.init()
+    def __init__(self, use_pool = True):
+        if use_pool:
+            if Database._pool is None:
+                Database._pool = Pool(**db_config)
+                Database._pool.init()
+            self.conn = Database._pool.get_conn()
+        else:
+            self.conn = pymysql.connect(**db_config)
 
-        self.conn = Database._pool.get_conn()
+        self.use_pool = use_pool
         self.conn.ping(reconnect=True)
         self.conn.commit()
         self.cursor = self.conn.cursor()
@@ -58,4 +64,7 @@ class Database:
         self.conn.commit()
 
     def close(self):
-        Database._pool.release(self.conn)
+        if self.use_pool:
+            Database._pool.release(self.conn)
+        else:
+            self.conn.close()
