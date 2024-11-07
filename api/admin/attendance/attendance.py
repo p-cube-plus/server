@@ -192,7 +192,7 @@ class AttendanceUserListAPI(Resource):
         try:
             # DB에서 회원 목록 불러오기
             database = Database()
-            sql = "SELECT u.id, u.name, u.grade, u.part_index, u.rest_type, ua.first_auth_time, ua.second_auth_time, ua.state FROM users u LEFT JOIN user_attendance ua "\
+            sql = "SELECT u.id, u.name, u.grade, u.part_index, u.rest_type, ua.first_auth_time, ua.second_auth_time, ua.state FROM user u LEFT JOIN user_attendance ua "\
                   "ON u.id = ua.user_id WHERE ua.attendance_id = %s;"
             user_list = database.execute_all(sql, (attendance_id,))
 

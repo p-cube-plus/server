@@ -55,7 +55,7 @@ class NaverLogin(Resource):
         
         try:
             database = Database()
-            sql = "SELECT is_signed FROM users WHERE id = %s;"
+            sql = "SELECT is_signed FROM user WHERE id = %s;"
             values = (user_id,)
             is_signed = database.execute_one(sql, values)
             if is_signed is None:
@@ -72,7 +72,7 @@ class NaverLogin(Resource):
             sql = "INSERT INTO identifier (identifier, user_id, is_signed) VALUES (%s, %s, %s);"
             values = (naver_identifier, user_id, 0)
             database.execute(sql, values)
-            sql = "UPDATE users SET is_signed = 1 WHERE id = %s;"
+            sql = "UPDATE user SET is_signed = 1 WHERE id = %s;"
             values = (user_id,)
             database.execute(sql, values)
             database.commit()
@@ -164,12 +164,12 @@ class OauthUserCheckAPI(Resource):
 
         try:
             database = Database()
-            sql = "SELECT id, part_index FROM users WHERE id = %s;"
+            sql = "SELECT id, part_index FROM user WHERE id = %s;"
             values = (user_id,)
             user = database.execute_one(sql, values)
 
             if user:
-                sql = "UPDATE users SET fcm_token = %s WHERE id = %s;"
+                sql = "UPDATE user SET fcm_token = %s WHERE id = %s;"
                 values = (user_info['fcm_token'], user_id)
                 database.execute(sql, values)
                 database.commit()

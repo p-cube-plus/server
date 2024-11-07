@@ -31,7 +31,7 @@ class Product(Resource):
         rent_log = database.execute_one(sql, values)
             
         if rent_log:
-            sql = "SELECT name FROM users WHERE id = %s;"
+            sql = "SELECT name FROM user WHERE id = %s;"
             values = (rent_log['user_id'],)
             rent_user = database.execute_one(sql, values)
             product['status']['rent_user'] = crypt.decrypt(rent_user['name'])
@@ -59,7 +59,7 @@ class ProductList(Resource):
             rent_log = database.execute_one(sql, values)
             
             if rent_log:
-                sql = "SELECT name FROM users WHERE id = %s;"
+                sql = "SELECT name FROM user WHERE id = %s;"
                 values = (rent_log['user_id'],)
                 rent_user = database.execute_one(sql, values)
                 product_list[idx]['status']['rent_user'] = crypt.decrypt(rent_user['name'])
@@ -92,7 +92,7 @@ class SpecificProductList(Resource):
             rent_log = database.execute_one(sql, values)
             
             if rent_log:
-                sql = "SELECT name FROM users WHERE id = %s;"
+                sql = "SELECT name FROM user WHERE id = %s;"
                 values = (rent_log['user_id'],)
                 rent_user = database.execute_one(sql, values)
                 product_list[idx]['status']['rent_user'] = crypt.decrypt(rent_user['name'])
@@ -141,7 +141,7 @@ class RentProduct(Resource):
             product_data = database.execute_one(sql, values)
 
             # 빌린 사람 이름 조회
-            sql = "SELECT name FROM users WHERE id = %s;"
+            sql = "SELECT name FROM user WHERE id = %s;"
             values = (user_id,)
             rent_user = database.execute_one(sql, values)
 

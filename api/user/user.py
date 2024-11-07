@@ -22,7 +22,7 @@ class UserProfileAPI(Resource):
         try:
             # DB에서 회원 정보 조회
             database = Database()
-            sql = "SELECT name, level, grade, part_index, rest_type, profile_image FROM users WHERE id = %s;"
+            sql = "SELECT name, level, grade, part_index, rest_type, profile_image FROM user WHERE id = %s;"
             values = (user_id,)
             user = database.execute_one(sql, values)
         except Exception as e:
@@ -58,7 +58,7 @@ class UserWarningAPI(Resource):
         try:
             # DB에서 user_id값에 맞는 경고 목록 불러오기
             database = Database()
-            sql = "SELECT * FROM warnings WHERE user_id = %s ORDER BY date;"
+            sql = "SELECT * FROM warning WHERE user_id = %s ORDER BY date;"
             values = (user_id,)
             warning_list = database.execute_all(sql, values)
         except Exception as e:
@@ -141,7 +141,7 @@ class UserListAPI(Resource):
         rest_type = request.args.get('rest_type', None)
 
         # 쿼리 파라미터에 맞게 SQL문 구성
-        sql = "SELECT id, name, level, grade, part_index, rest_type, profile_image FROM users WHERE 1=1"
+        sql = "SELECT id, name, level, grade, part_index, rest_type, profile_image FROM user WHERE 1=1"
         values = []
         if part_index:
             sql += " AND part_index = %s"

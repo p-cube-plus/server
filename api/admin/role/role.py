@@ -175,7 +175,7 @@ class AdminAPIAccessLevelAPI(Resource):
 
         try:
             database = Database()
-            sql = "SELECT api_access_level FROM users WHERE id = %s;"
+            sql = "SELECT api_access_level FROM user WHERE id = %s;"
             values = (user_id,)
             api_access_level = database.execute_one(sql, values)
         except Exception as e:
@@ -192,7 +192,7 @@ class AdminAPIAccessLevelAPI(Resource):
 
         try:
             database = Database()
-            sql = "UPDATE users SET api_access_level = %s WHERE id = %s;"
+            sql = "UPDATE user SET api_access_level = %s WHERE id = %s;"
             values = (data['api_access_level'], data['user_id'])
             database.execute(sql, values)
             database.commit()

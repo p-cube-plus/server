@@ -62,7 +62,7 @@ class LedgerScheduler(AbstractAccountingScheduler):
         database = Database()
 
         # 새로 추가된 데이터를 INSERT
-        sql = "INSERT INTO accountings VALUES(%s, %s, %s, %s, %s, %s);"
+        sql = "INSERT INTO accounting VALUES(%s, %s, %s, %s, %s, %s);"
         values = []
 
         for sheet_idx in created:
@@ -72,7 +72,7 @@ class LedgerScheduler(AbstractAccountingScheduler):
         database.execute_many(sql, values)
 
         # 삭제된 데이터를 DELETE
-        sql = "DELETE FROM accountings WHERE id = %s;"
+        sql = "DELETE FROM accounting WHERE id = %s;"
         values = []
 
         for db_idx in deleted:
@@ -82,7 +82,7 @@ class LedgerScheduler(AbstractAccountingScheduler):
         database.execute_many(sql, values)
 
         # 수정된 데이터를 UPDATE
-        sql = "UPDATE accountings SET date = %s, amount = %s, description = %s, category = %s, payment_method = %s WHERE id = %s;"
+        sql = "UPDATE accounting SET date = %s, amount = %s, description = %s, category = %s, payment_method = %s WHERE id = %s;"
         values = []
 
         for sheet_idx in modified:
@@ -154,7 +154,7 @@ class LedgerScheduler(AbstractAccountingScheduler):
         database = Database()
 
         # DB에서 기간에 따른 데이터 불러오기
-        sql = "SELECT * FROM accountings "\
+        sql = "SELECT * FROM accounting "\
             f"WHERE date between '{start_date}' and '{end_date}' ORDER BY id;"
 
         raw_data = database.execute_all(sql)

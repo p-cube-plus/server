@@ -70,12 +70,12 @@ class UserSync:
         
         # 유저 정보 동기화
         database = Database()
-        sql = f"INSERT INTO users ({columns_str}) VALUES ({placeholders}) ON DUPLICATE KEY UPDATE {updates};"
+        sql = f"INSERT INTO user ({columns_str}) VALUES ({placeholders}) ON DUPLICATE KEY UPDATE {updates};"
         database.execute_many(sql, members)
         database.commit()
         
         # 탈퇴자 조회 후 모든 데이터 제거
-        sql = f"DELETE FROM users WHERE level = {UserTool.rank_to_index('탈퇴자')};"
+        sql = f"DELETE FROM user WHERE level = {UserTool.rank_to_index('탈퇴자')};"
         database.execute(sql)
         database.commit()
         database.close()

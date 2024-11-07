@@ -23,7 +23,7 @@ class SeminarUserAPI(Resource):
         try:
             # DB에서 user_id값에 맞는 세미나 목록 불러오기
             database = Database()
-            sql = "SELECT * FROM seminars WHERE user_id = %s;"
+            sql = "SELECT * FROM seminar WHERE user_id = %s;"
             values = (user_id,)
             seminar_list = database.execute_all(sql, values)
         except Exception as e:
@@ -59,7 +59,7 @@ class SeminarUserAPI(Resource):
         try:
             # 세미나 정보를 DB에 추가
             database = Database()
-            sql = "INSERT INTO seminars (user_id, title, url, category, date) VALUES (%s, %s, %s, %s, %s);"
+            sql = "INSERT INTO seminar (user_id, title, url, category, date) VALUES (%s, %s, %s, %s, %s);"
             values = (user_id, seminar['title'], seminar['url'], seminar['category'], seminar['date'])
             database.execute(sql, values)
             database.commit()
@@ -89,7 +89,7 @@ class SeminarUserAPI(Resource):
         try:
             # 수정된 사항을 DB에 반영
             database = Database()
-            sql = "UPDATE seminars SET user_id = %s, title = %s, url = %s, category = %s, date = %s WHERE id = %s;"
+            sql = "UPDATE seminar SET user_id = %s, title = %s, url = %s, category = %s, date = %s WHERE id = %s;"
             values = (user_id, seminar['title'], seminar['url'], seminar['category'], seminar['date'], seminar['id'])
             database.execute(sql, values)
             database.commit()
@@ -113,7 +113,7 @@ class SeminarUserAPI(Resource):
         try:
             # 세미나 정보를 DB에서 삭제
             database = Database()
-            sql = "DELETE FROM seminars WHERE id = %s;"
+            sql = "DELETE FROM seminar WHERE id = %s;"
             values = (seminar_id,)
             database.execute(sql, values)
             database.commit()

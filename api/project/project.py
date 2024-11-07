@@ -98,7 +98,7 @@ class ProjectAllListAPI(Resource):
         try:
             # 전체 프로젝트 목록 불러오기
             database = Database()
-            sql = "SELECT * FROM projects ORDER BY start_date DESC;"
+            sql = "SELECT * FROM project ORDER BY start_date DESC;"
             project_list = database.execute_all(sql)
         except Exception as e:
             return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!', 'error': str(e)}, 400

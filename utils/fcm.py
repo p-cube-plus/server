@@ -33,10 +33,10 @@ def load_messages():
 
             # 알림 대상자 설정
             if category == 3:  # 정기 회의인 경우
-                sql = "SELECT id FROM users WHERE rest_type = -1;"
+                sql = "SELECT id FROM user WHERE rest_type = -1;"
                 notification['member_list'] = [user['id'] for user in database.execute_all(sql)]
             elif category <= 2:  # 파트 회의인 경우
-                sql = "SELECT id FROM users WHERE rest_type = -1 AND part_index = %s;"
+                sql = "SELECT id FROM user WHERE rest_type = -1 AND part_index = %s;"
                 values = (category,)
                 notification['member_list'] = [user['id'] for user in database.execute_all(sql, values)]
 

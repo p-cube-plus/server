@@ -79,10 +79,10 @@ class NotificationByCategoryAPI(Resource):
             id = database.cursor.lastrowid
 
             if category == 3:
-                sql = "SELECT id FROM users WHERE rest_type = -1;"
+                sql = "SELECT id FROM user WHERE rest_type = -1;"
                 notification['member_list'] = [user['id'] for user in database.execute_all(sql)]
             elif category <= 2:
-                sql = "SELECT id FROM users WHERE rest_type = -1 AND part_index = %s;"
+                sql = "SELECT id FROM user WHERE rest_type = -1 AND part_index = %s;"
                 values = (category,)
                 notification['member_list'] = [user['id'] for user in database.execute_all(sql, values)]
             
@@ -137,10 +137,10 @@ class NotificationByCategoryAPI(Resource):
             database.execute(sql, values)
             
             if category == 3:
-                sql = "SELECT id FROM users WHERE rest_type = -1;"
+                sql = "SELECT id FROM user WHERE rest_type = -1;"
                 notification['member_list'] = [user['id'] for user in database.execute_all(sql)]
             elif category <= 2:
-                sql = "SELECT id FROM users WHERE rest_type = -1 AND part_index = %s;"
+                sql = "SELECT id FROM user WHERE rest_type = -1 AND part_index = %s;"
                 values = (category,)
                 notification['member_list'] = [user['id'] for user in database.execute_all(sql, values)]
 
@@ -201,7 +201,7 @@ class NotificationUserListAPI(Resource):
     def get(self):
         try:
             database = Database()
-            sql = "SELECT id, name, grade FROM users;"
+            sql = "SELECT id, name, grade FROM user;"
             user_list = database.execute_all(sql)
 
             cript = AESCipher()
@@ -225,7 +225,7 @@ class NotificationPaymentPeriodAPI(Resource):
 
         try:
             database = Database()
-            sql = "SELECT date, start_date, end_date FROM monthly_payment_periods WHERE date between %s AND %s ORDER BY date;"
+            sql = "SELECT date, start_date, end_date FROM monthly_payment_period WHERE date between %s AND %s ORDER BY date;"
             values = (start_month, current_month)
             payment_period_list = database.execute_all(sql, values)
         except Exception as e:

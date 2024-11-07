@@ -18,7 +18,7 @@ class HomeAttendanceAPI(Resource):
         try:
             database = Database()
 
-            sql = "SELECT * FROM schedules WHERE title LIKE %s AND start_date >= CURDATE() ORDER BY start_date;"
+            sql = "SELECT * FROM schedule WHERE title LIKE %s AND start_date >= CURDATE() ORDER BY start_date;"
             values = ("%회의%",)
             meeting_list = database.execute_all(sql, values)
         except Exception as e:
@@ -45,7 +45,7 @@ class HomeScheduleAPI(Resource):
         try:
             database = Database()
 
-            sql = "SELECT * FROM schedules ORDER BY start_date;"
+            sql = "SELECT * FROM schedule ORDER BY start_date;"
             schedule_list = database.execute_all(sql)
         except Exception as e:
             return {'message': '서버에 오류가 발생했어요 :(\n지속적으로 발생하면 문의주세요!', 'error': str(e)}, 400

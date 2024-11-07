@@ -31,11 +31,11 @@ class MembershipFeeCheckAPI(Resource):
         try:
             database = Database()
 
-            sql = "SELECT date, start_date, end_date FROM monthly_payment_periods WHERE date BETWEEN %s AND %s ORDER BY date;"
+            sql = "SELECT date, start_date, end_date FROM monthly_payment_period WHERE date BETWEEN %s AND %s ORDER BY date;"
             values = (start_month, current_month)
             payment_period_list = database.execute_all(sql, values)
 
-            sql = "SELECT date, name, level, grade, amount, category FROM membership_fees mf JOIN users u ON mf.user_id = u.id WHERE date BETWEEN %s AND %s ORDER BY date;"
+            sql = "SELECT date, name, level, grade, amount, category FROM membership_fee mf JOIN user u ON mf.user_id = u.id WHERE date BETWEEN %s AND %s ORDER BY date;"
             values = (start_month, current_month)
             user_payment_list = database.execute_all(sql, values)
 
@@ -87,7 +87,7 @@ class MembershipFeePeriodAPI(Resource):
 
         try:
             database = Database()
-            sql = "SELECT date, start_date, end_date FROM monthly_payment_periods WHERE date BETWEEN %s AND %s ORDER BY date;"
+            sql = "SELECT date, start_date, end_date FROM monthly_payment_period WHERE date BETWEEN %s AND %s ORDER BY date;"
             values = (start_month, current_month)
             payment_period_list = database.execute_all(sql, values)
         except Exception as e:
@@ -115,7 +115,7 @@ class MembershipFeePeriodAPI(Resource):
 
         try:
             database = Database()
-            sql = "INSERT INTO monthly_payment_periods (date, start_date, end_date) VALUES (%s, %s, %s);"
+            sql = "INSERT INTO monthly_payment_period (date, start_date, end_date) VALUES (%s, %s, %s);"
             values = (payment_period['date'], payment_period['start_date'], payment_period['end_date'])
             database.execute(sql, values)
             database.commit()
@@ -136,7 +136,7 @@ class MembershipFeePeriodAPI(Resource):
 
         try:
             database = Database()
-            sql = "UPDATE monthly_payment_periods SET start_date = %s, end_date = %s WHERE date = %s;"
+            sql = "UPDATE monthly_payment_period SET start_date = %s, end_date = %s WHERE date = %s;"
             values = (payment_period['start_date'], payment_period['end_date'], payment_period['date'])
             database.execute(sql, values)
             database.commit()
@@ -157,7 +157,7 @@ class MembershipFeePeriodAPI(Resource):
 
         try:
             database = Database()
-            sql = "DELETE FROM monthly_payment_periods WHERE date = %s;"
+            sql = "DELETE FROM monthly_payment_period WHERE date = %s;"
             values = (payment_date,)
             database.execute(sql, values)
             database.commit()

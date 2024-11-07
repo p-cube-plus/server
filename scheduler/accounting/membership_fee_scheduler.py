@@ -61,7 +61,7 @@ class MembershipFeeScheduler(AccountingScheduler):
         database = Database()
 
         # 새로 추가된 데이터를 INSERT
-        sql = "INSERT INTO membership_fees VALUES(%s, %s, %s, %s);"
+        sql = "INSERT INTO membership_fee VALUES(%s, %s, %s, %s);"
         values = []
 
         for sheet_idx in created:
@@ -74,7 +74,7 @@ class MembershipFeeScheduler(AccountingScheduler):
         database.execute_many(sql, values)
 
         # 삭제된 데이터를 DELETE
-        sql = "DELETE FROM membership_fees WHERE user_id = %s;"
+        sql = "DELETE FROM membership_fee WHERE user_id = %s;"
         values = []
 
         for db_idx in deleted:
@@ -85,7 +85,7 @@ class MembershipFeeScheduler(AccountingScheduler):
         database.execute_many(sql, values)
 
         # 수정된 데이터를 UPDATE
-        sql = "UPDATE membership_fees SET category = %s WHERE date = %s AND user_id = %s;"
+        sql = "UPDATE membership_fee SET category = %s WHERE date = %s AND user_id = %s;"
         values = []
 
         for sheet_idx, pos in modified:
@@ -150,7 +150,7 @@ class MembershipFeeScheduler(AccountingScheduler):
         database = Database()
 
         # DB에서 기간에 따른 데이터 불러오기
-        sql = "SELECT user_id, GROUP_CONCAT(amount ORDER BY date) as amounts, GROUP_CONCAT(category ORDER BY date) as categories FROM membership_fees "\
+        sql = "SELECT user_id, GROUP_CONCAT(amount ORDER BY date) as amounts, GROUP_CONCAT(category ORDER BY date) as categories FROM membership_fee "\
             f"WHERE date between '{start_date}' and '{end_date}' GROUP BY user_id ORDER BY user_id;"
 
         raw_data = database.execute_all(sql)

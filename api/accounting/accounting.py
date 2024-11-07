@@ -25,11 +25,11 @@ class AccountingUserAPI(Resource):
         try:
             database = Database()
 
-            sql = "SELECT date, amount, category FROM membership_fees WHERE user_id = %s AND date BETWEEN %s AND %s ORDER BY date;"
+            sql = "SELECT date, amount, category FROM membership_fee WHERE user_id = %s AND date BETWEEN %s AND %s ORDER BY date;"
             values = (user_id, start_month, current_month)
             monthly_payment_list = database.execute_all(sql, values)
 
-            sql = "SELECT start_date, end_date FROM monthly_payment_periods WHERE date = %s;"
+            sql = "SELECT start_date, end_date FROM monthly_payment_period WHERE date = %s;"
             values = (current_month,)
             payment_period = database.execute_one(sql, values)
             
@@ -73,7 +73,7 @@ class AccountingListAPI(Resource):
     def get(self):
         try:
             database = Database()
-            sql = "SELECT * FROM accountings;"
+            sql = "SELECT * FROM accounting;"
             accounting_list = database.execute_all(sql)
 
             sql = "SELECT value FROM data_map WHERE category = 'account_balance';"

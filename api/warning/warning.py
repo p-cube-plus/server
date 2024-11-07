@@ -21,7 +21,7 @@ class WarningUserAPI(Resource):
         try:
             # DB에서 user_id값에 맞는 경고 목록 불러오기
             database = Database()
-            sql = "SELECT id, category, date, description, comment FROM warnings WHERE user_id = %s ORDER BY date;"
+            sql = "SELECT id, category, date, description, comment FROM warning WHERE user_id = %s ORDER BY date;"
             values = (user_id,)
             warning_list = database.execute_all(sql, values)
         except Exception as e:
