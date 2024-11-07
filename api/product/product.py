@@ -16,7 +16,7 @@ class Product(Resource):
     @product.doc(security='apiKey')
     def get(self, product_code):
         database = Database()
-        sql = "SELECT * FROM products WHERE code = %s;"
+        sql = "SELECT * FROM product WHERE code = %s;"
         values = (product_code,)
         product = database.execute_one(sql, values)
         
@@ -48,7 +48,7 @@ class ProductList(Resource):
     @product.doc(security='apiKey')
     def get(self):        
         database = Database()
-        sql = "SELECT * FROM products;"
+        sql = "SELECT * FROM product;"
         product_list = database.execute_all(sql)
         
         for idx, product in enumerate(product_list):
@@ -80,7 +80,7 @@ class SpecificProductList(Resource):
     @product.doc(security='apiKey')
     def get(self, product_name):
         database = Database()
-        sql = "SELECT * FROM products WHERE name LIKE %s;"
+        sql = "SELECT * FROM product WHERE name LIKE %s;"
         values = (f"%{product_name}%",)
         product_list = database.execute_all(sql, values)
         
@@ -113,14 +113,14 @@ class RentProduct(Resource):
     def post(self, product_code):
         user_id = get_jwt_identity()
         database = Database()
-        sql = "SELECT * FROM products WHERE code = %s;"
+        sql = "SELECT * FROM product WHERE code = %s;"
         values = (product_code,)
         product = database.execute_one(sql, values)
         
         if product and product['is_available']: # 물품 대여에 대한 로직
             # 물품 정보를 대여중인 상태로 업데이트
             status = "대여중"
-            sql = "UPDATE products SET is_available = %s, status = %s WHERE code = %s;"
+            sql = "UPDATE product SET is_available = %s, status = %s WHERE code = %s;"
             values = (0, status, product_code)
             database.execute(sql, values)
             database.commit()
@@ -136,7 +136,7 @@ class RentProduct(Resource):
             database.commit()
 
             # 물품 정보가 변경 되었으므로 물품 상세 정보 재조회
-            sql = "SELECT * FROM products WHERE code = %s;"
+            sql = "SELECT * FROM product WHERE code = %s;"
             values = (product_code,)
             product_data = database.execute_one(sql, values)
 
@@ -185,7 +185,7 @@ class ReturnProduct(Resource):
     def put(self, product_code):
         user_id = get_jwt_identity()
         database = Database()
-        sql = "SELECT * FROM products WHERE code = %s;"
+        sql = "SELECT * FROM product WHERE code = %s;"
         values = (product_code,)
         product = database.execute_one(sql, values)
 
@@ -211,13 +211,13 @@ class ReturnProduct(Resource):
                 database.commit()
 
                 # 물품 정보 수정
-                sql = "UPDATE products SET is_available = %s, status = %s WHERE code = %s;"
+                sql = "UPDATE product SET is_available = %s, status = %s WHERE code = %s;"
                 values = (1, status, product_code)
                 database.execute(sql, values)
                 database.commit()
 
                 # 물품 정보가 변경 되었으므로 물품 상세 정보 재조회
-                sql = "SELECT * FROM products WHERE code = %s;"
+                sql = "SELECT * FROM product WHERE code = %s;"
                 values = (product_code,)
                 product_data = database.execute_one(sql, values)
 
