@@ -5,7 +5,7 @@ from datetime import datetime, date
 from utils.dto import AccountingDTO
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from utils.enum_tool import AccountingEnum
-from utils.api_access_level_tool import api_access_level
+from auth.api_auth import api_access_level, get_user_id
 
 accounting = AccountingDTO.api
 
@@ -15,9 +15,8 @@ class AccountingUserAPI(Resource):
     @accounting.response(400, 'Bad Request', AccountingDTO.accounting_response_message)
     @accounting.doc(security='apiKey')
     @api_access_level(1)
-    @jwt_required()
     def get(self):
-        user_id = get_jwt_identity()
+        user_id = get_user_id()
 
         current_month = date(datetime.today().year, datetime.today().month, 1).strftime('%Y-%m-%d')
         start_month = date(datetime.today().year - 1, 6, 1).strftime('%Y-%m-%d')

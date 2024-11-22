@@ -5,7 +5,7 @@ from database.database import Database
 from utils.dto import HomeDTO
 from datetime import datetime, date, timedelta
 from calendar import monthcalendar
-from utils.api_access_level_tool import api_access_level
+from auth.api_auth import api_access_level, get_user_id
 
 def get_meeting_weekdays(month_calendar, weekday):
     dates = []
@@ -163,9 +163,8 @@ class HomeScheduleAllAPI(Resource):
 class HomeProductAPI(Resource):
     @home.doc(security='apiKey')    
     @api_access_level(1)
-    @jwt_required()
     def get(self):
-        user_id = get_jwt_identity()
+        user_id = get_user_id()
 
         try:
             database = Database()

@@ -3,7 +3,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from database.database import Database
 from datetime import datetime, timedelta
 from utils.aes_cipher import AESCipher
-from utils.api_access_level_tool import api_access_level
+from auth.api_auth import api_access_level, get_user_id
 
 product = Namespace('product')
 crypt = AESCipher()
@@ -44,7 +44,7 @@ class Product(Resource):
 @product.response(200, 'Success')
 @product.response(401, 'Unauthorized')
 class ProductList(Resource):
-    @jwt_required()
+    @api_access_level(1)
     @product.doc(security='apiKey')
     def get(self):        
         database = Database()
@@ -76,7 +76,7 @@ class ProductList(Resource):
 @product.response(200, 'Success')
 @product.response(401, 'Unauthorized')
 class SpecificProductList(Resource):
-    @jwt_required()
+    @api_access_level(1)
     @product.doc(security='apiKey')
     def get(self, product_name):
         database = Database()
@@ -109,9 +109,9 @@ class SpecificProductList(Resource):
 @product.response(200, 'Success')
 @product.response(401, 'Unauthorized')
 class RentProduct(Resource):
-    @jwt_required()
+    @api_access_level(1)
     def post(self, product_code):
-        user_id = get_jwt_identity()
+        user_id = get_user_id()
         database = Database()
         sql = "SELECT * FROM product WHERE code = %s;"
         values = (product_code,)
@@ -180,10 +180,10 @@ class RentProduct(Resource):
 @product.response(200, 'Success')
 @product.response(401, 'Unauthorized')
 class ReturnProduct(Resource):
-    @jwt_required()
+    @api_access_level(1)
     @product.doc(security='apiKey')
     def put(self, product_code):
-        user_id = get_jwt_identity()
+        user_id = get_user_id()
         database = Database()
         sql = "SELECT * FROM product WHERE code = %s;"
         values = (product_code,)

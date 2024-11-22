@@ -5,7 +5,7 @@ from utils.dto import AdminAttendanceDTO
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from utils.enum_tool import AttendanceEnum, UserEnum
 from utils.aes_cipher import AESCipher
-from utils.api_access_level_tool import api_access_level
+from auth.api_auth import api_access_level, get_user_id
 
 attendance = AdminAttendanceDTO.api
 

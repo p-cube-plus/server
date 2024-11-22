@@ -7,7 +7,7 @@ from flask_restx import Resource, Namespace
 from flask import request, current_app
 from utils.dto import AuthDTO
 import time
-from utils.api_access_level_tool import api_access_level
+from auth.api_auth import api_access_level, get_user_id
 
 auth = AuthDTO.api
 

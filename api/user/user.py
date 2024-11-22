@@ -5,7 +5,7 @@ from utils.dto import UserDTO
 from utils.enum_tool import UserEnum, WarningEnum, ProjectEnum
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from utils.aes_cipher import AESCipher
-from utils.api_access_level_tool import api_access_level
+from auth.api_auth import api_access_level, get_user_id
 
 user = UserDTO.api
 
@@ -16,7 +16,7 @@ class UserProfileAPI(Resource):
     @user.doc(security='apiKey')
     @api_access_level(1)
     def get(self):
-        user_id = get_jwt_identity()
+        user_id = get_user_id()
 
         # DB 예외 처리
         try:
@@ -52,7 +52,7 @@ class UserWarningAPI(Resource):
     @user.doc(security='apiKey')
     @api_access_level(1)
     def get(self):
-        user_id = get_jwt_identity()
+        user_id = get_user_id()
 
         # DB 예외 처리
         try:
@@ -85,7 +85,7 @@ class UserProjectAPI(Resource):
     @user.doc(security='apiKey')
     @api_access_level(1)
     def get(self):
-        user_id = get_jwt_identity()
+        user_id = get_user_id()
 
         # DB 예외 처리
         try:

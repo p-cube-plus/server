@@ -5,7 +5,7 @@ from datetime import datetime, date
 from utils.dto import AdminRoleDTO
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from utils.enum_tool import AdminEnum
-from utils.api_access_level_tool import api_access_level
+from auth.api_auth import api_access_level, get_user_id
 
 role = AdminRoleDTO.api
 

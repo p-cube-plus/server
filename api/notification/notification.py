@@ -3,7 +3,7 @@ from flask_restx import Resource, Namespace
 from database.database import Database
 from utils.dto import NotificationDTO
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from utils.api_access_level_tool import api_access_level
+from auth.api_auth import api_access_level, get_user_id
 
 notification = NotificationDTO.api
 
@@ -16,7 +16,7 @@ class NotificationAPI(Resource):
     @notification.doc(security='apiKey')
     @api_access_level(1)
     def get(self):
-        user_id = get_jwt_identity()
+        user_id = get_user_id()
 
         # DB 예외처리
         try:

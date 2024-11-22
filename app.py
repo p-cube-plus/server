@@ -17,6 +17,7 @@ from utils import fcm
 import memcache
 import configparser
 import datetime
+import sys
 
 config = configparser.ConfigParser()
 config.read_file(open('config/config.ini'))
@@ -99,4 +100,18 @@ app.register_blueprint(admin)
 fcm.load_messages()
 
 if __name__ == "__main__":
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    # 명령행 인자 리스트
+    args = sys.argv[1:]
+
+    # '--debug' 인자가 있으면 디버그 모드 활성화
+    app.debug = '--debug' in args
+
+    # '--user' 인자가 있으면 디버깅 모드 활성화 시 회원 ID로 이용
+    try:
+        user_id = args[args.index('--user') + 1]
+        app.config['DEBUG_USER_ID'] = user_id
+    except (ValueError, IndexError):
+        pass
+
+    # Flask 어플리케이션 실행
+    app.run(host='0.0.0.0', port=5000)

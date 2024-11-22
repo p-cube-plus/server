@@ -23,8 +23,8 @@ def erase_access_level(user_id):
 def api_access_level(access_level, **extargs):
     def decorator(func):
         @wraps(func)
-        def wrapper(*args, **kwargs):
-            if not access_level == 0:
+        def wrapper(*args, **kwargs): 
+            if not access_level == 0 and not current_app.debug:
                 verify_jwt_in_request(extargs)
                 user_id = get_jwt_identity()
                 # user_access_level = get_access_level(user_id)
@@ -34,3 +34,9 @@ def api_access_level(access_level, **extargs):
             return current_app.ensure_sync(func)(*args, **kwargs)
         return wrapper
     return decorator
+
+# 인증된 사용자의 ID를 반환
+def get_user_id():
+    if current_app.debug:
+        return current_app.config['DEBUG_USER_ID']
+    return get_jwt_identity()

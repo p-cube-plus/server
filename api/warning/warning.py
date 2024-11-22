@@ -4,7 +4,7 @@ from database.database import Database
 from utils.dto import WarningDTO
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from utils.enum_tool import WarningEnum
-from utils.api_access_level_tool import api_access_level
+from auth.api_auth import api_access_level, get_user_id
 
 warning = WarningDTO.api
 
@@ -15,7 +15,7 @@ class WarningUserAPI(Resource):
     @warning.doc(security='apiKey')
     @api_access_level(1)
     def get(self):
-        user_id = get_jwt_identity()
+        user_id = get_user_id()
 
         # DB 예외 처리
         try:

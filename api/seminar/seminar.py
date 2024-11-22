@@ -4,7 +4,7 @@ from database.database import Database
 from utils.dto import SeminarDTO
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from utils.enum_tool import SeminarEnum
-from utils.api_access_level_tool import api_access_level
+from auth.api_auth import api_access_level, get_user_id
 
 seminar = SeminarDTO.api
 

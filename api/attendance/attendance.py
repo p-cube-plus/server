@@ -5,7 +5,7 @@ import datetime
 from utils.dto import AttendanceDTO
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from utils.enum_tool import AttendanceEnum
-from utils.api_access_level_tool import api_access_level
+from auth.api_auth import api_access_level, get_user_id
 
 # 월별 n주차 계산
 def get_week_of_month(date):
@@ -47,9 +47,8 @@ class AttendanceUserAPI(Resource):
     @attendance.response(400, 'Bad Request', AttendanceDTO.response_message)
     @attendance.doc(security='apiKey')
     @api_access_level(1)
-    @jwt_required()
     def get(self, attendance_id):
-        user_id = get_jwt_identity()
+        user_id = get_user_id()
         prev_attendance_count = int(request.args['prev_attendance_count'])
 
         try:
@@ -103,9 +102,8 @@ class AttendanceUserAPI(Resource):
     @attendance.response(400, 'Bad Request', AttendanceDTO.response_message)
     @attendance.doc(security='apiKey')
     @api_access_level(1)
-    @jwt_required()
     def put(self, attendance_id):
-        user_id = get_jwt_identity()
+        user_id = get_user_id()
         user_attendance = request.get_json()
         user_attendance['state'] = AttendanceEnum.UserAttendanceState(user_attendance['state'])
 
@@ -134,9 +132,8 @@ class AttendanceDetailAPI(Resource):
     @attendance.response(400, 'Bad Request', AttendanceDTO.response_message)
     @attendance.doc(security='apiKey')
     @api_access_level(1)
-    @jwt_required()
     def get(self):
-        user_id = get_jwt_identity()
+        user_id = get_user_id()
         
         try:
             database = Database()

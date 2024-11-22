@@ -5,7 +5,7 @@ from utils.aes_cipher import AESCipher
 from utils.dto import ProjectDTO
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from utils.enum_tool import ProjectEnum
-from utils.api_access_level_tool import api_access_level
+from auth.api_auth import api_access_level, get_user_id
 
 project = ProjectDTO.api
 crypt = AESCipher()
@@ -18,7 +18,7 @@ class ProjectListAPI(Resource):
     @project.doc(security='apiKey')
     @api_access_level(1)
     def get(self):
-        user_id = get_jwt_identity()
+        user_id = get_user_id()
 
         # DB 예외 처리
         try:
